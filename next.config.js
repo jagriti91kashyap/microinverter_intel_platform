@@ -14,11 +14,6 @@ const nextConfig = {
   images: {
     domains: [],
   },
-  // Configure for better development experience
-  devIndicators: {
-    buildActivity: true,
-    buildActivityPosition: 'bottom-right',
-  },
   // Experimental features for Next.js 16.2.9
   experimental: {
     // Optimized bundling
