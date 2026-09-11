@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microinverter Platform — Solution Architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+    .page { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    h1 span { color: #F26322; }
+    .subtitle { font-size: 0.875rem; color: #6b7280; margin-bottom: 32px; }
+    h2 { font-size: 1.125rem; font-weight: 600; margin: 36px 0 16px; border-bottom: 2px solid #F26322; padding-bottom: 6px; display: inline-block; }
+    .diagram-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow-x: auto; }
+    .diagram-card .mermaid { display: flex; justify-content: center; }
+    .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+    .legend-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; }
+    .legend-item h4 { font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px; }
+    .legend-item p { font-size: 0.75rem; color: #6b7280; line-height: 1.5; }
+    .badge { display: inline-block; font-size: 0.6875rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-right: 4px; }
+    .badge-orange { background: #FFF3EB; color: #F26322; }
+    .badge-blue { background: #EBF5FF; color: #2563EB; }
+    .badge-green { background: #ECFDF5; color: #059669; }
+    .badge-purple { background: #F3E8FF; color: #7C3AED; }
+    .badge-gray { background: #F3F4F6; color: #4B5563; }
+    .tech-stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .section-desc { font-size: 0.8125rem; color: #6b7280; margin-bottom: 16px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1><span>Enphase</span> Microinverter Intelligence Platform</h1>
+  <p class="subtitle">Solution Architecture — Next.js 15 / React 19 / TypeScript</p>
+
+  <!-- ============================================ -->
+  <!-- 1. HIGH-LEVEL SYSTEM OVERVIEW -->
+  <!-- ============================================ -->
+  <h2>1. High-Level System Overview</h2>
+  <p class="section-desc">End-to-end data flow from external manufacturer sources through the AI pipeline to the analyst-facing UI.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TB
+  subgraph EXT["External Data Sources"]
+    MFR["Manufacturer Websites<br/>(14 manufacturers, 10+ languages)"]
+    PDF["Product Datasheets<br/>(PDF / HTML)"]
+    NEWS["Industry News<br/>(PV Magazine, GlobeNewsWire, AP News)"]
+    SEARCH["Web Search APIs<br/>(SerpAPI / Google)"]
+  end
+
+  subgraph PIPELINE["AI Data Pipeline"]
+    CRAWLER["Multi-Language Crawler<br/><i>Playwright + hreflang discovery</i>"]
+    PDFPROC["PDF Processor<br/><i>pdf-parse + extraction</i>"]
+    WEBSEARCH["Web Search Service<br/><i>SerpAPI integration</i>"]
+    EXTRACT["AI Extraction Engine<br/><i>Anthropic Claude</i>"]
+    SUMMARIZE["AI Summarization<br/><i>OpenAI GPT-4o</i>"]
+    EMBED["Embeddings Service<br/><i>OpenAI text-embedding-3</i>"]
+    TRANSLATE["Translation Layer<br/><i>GPT-4o-mini (10 languages)</i>"]
+  end
+
+  subgraph DATA["Data Layer"]
+    STATIC["Static Data Store<br/><i>TypeScript modules</i><br/>products-data.ts<br/>comprehensive-data.ts"]
+    PG["PostgreSQL<br/><i>Prisma ORM</i><br/>Products, Manufacturers,<br/>Revisions, Users"]
+    PGVEC["pgvector<br/><i>Vector embeddings</i><br/>Semantic search"]
+    REDIS["Redis / BullMQ<br/><i>Job queue + caching</i>"]
+  end
+
+  subgraph APP["Next.js 15 Application"]
+    MW["Middleware<br/><i>Auth guard + routing</i>"]
+    API["API Routes<br/><i>13 route groups</i>"]
+    PAGES["App Router Pages<br/><i>7 main views</i>"]
+    AUTH["NextAuth.js<br/><i>JWT + Credentials</i>"]
+  end
+
+  subgraph CLIENT["Client Browser"]
+    UI["React 19 SPA<br/><i>Tailwind CSS + Recharts<br/>+ react-simple-maps</i>"]
+  end
+
+  MFR --> CRAWLER
+  PDF --> PDFPROC
+  NEWS --> WEBSEARCH
+  SEARCH --> WEBSEARCH
+  CRAWLER --> TRANSLATE
+  TRANSLATE --> EXTRACT
+  PDFPROC --> EXTRACT
+  WEBSEARCH --> EXTRACT
+  EXTRACT --> SUMMARIZE
+  EXTRACT --> EMBED
+  SUMMARIZE --> DATA
+  EMBED --> PGVEC
+  EXTRACT --> PG
+  EXTRACT --> STATIC
+  REDIS --> PIPELINE
+  STATIC --> API
+  PG --> API
+  PGVEC --> API
+  AUTH --> MW
+  MW --> PAGES
+  API --> PAGES
+  PAGES --> UI
+
+  style EXT fill:#FFF3EB,stroke:#F26322,stroke-width:2px
+  style PIPELINE fill:#F3E8FF,stroke:#7C3AED,stroke-width:2px
+  style DATA fill:#EBF5FF,stroke:#2563EB,stroke-width:2px
+  style APP fill:#ECFDF5,stroke:#059669,stroke-width:2px
+  style CLIENT fill:#F3F4F6,stroke:#4B5563,stroke-width:2px
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 2. APPLICATION LAYER - PAGES & API -->
+  <!-- ============================================ -->
+  <h2>2. Application Layer — Pages & API Routes</h2>
+  <p class="section-desc">Next.js App Router structure with protected routes, API endpoints, and shared components.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+  subgraph AUTH_FLOW["Authentication"]
+    SIGNIN["/auth/signin"]
+    AUTHERR["/auth/error"]
+    NEXTAUTH["NextAuth.js<br/>Credentials Provider"]
+    JWT["JWT Session<br/>(24h expiry)"]
+    SIGNIN --> NEXTAUTH --> JWT
+    AUTHERR -.-> SIGNIN
+  end
+
+  subgraph MIDDLEWARE["Route Protection"]
+    MW["middleware.ts"]
+    PUBLIC["Public: /auth/*"]
+    PROTECTED["Protected: /dashboard,<br/>/search, /compare,<br/>/changes, /pipeline,<br/>/manufacturers,<br/>/market-search"]
+    ADMIN["Admin: /admin/*"]
+    MW --> PUBLIC
+    MW --> PROTECTED
+    MW --> ADMIN
+  end
+
+  subgraph PAGES["Client Pages"]
+    DASH["/dashboard<br/><i>KPIs, Charts, News</i>"]
+    SEARCH_P["/search<br/><i>Product Library</i>"]
+    COMPARE["/compare<br/><i>Side-by-side + AI Summary</i>"]
+    CHANGES["/changes<br/><i>News & Change Events</i>"]
+    MFRS["/manufacturers<br/><i>Grid + World Map</i>"]
+    MFRS_D["/manufacturers/[id]<br/><i>Detail + Geo Coverage</i>"]
+    PIPE["/pipeline<br/><i>AI Crawl Status</i>"]
+  end
+
+  subgraph API_ROUTES["API Route Groups"]
+    A_AUTH["/api/auth/*<br/>login, verify"]
+    A_PROD["/api/products<br/>CRUD + search"]
+    A_MFR["/api/manufacturers"]
+    A_DASH["/api/dashboard/kpi"]
+    A_CRAWL["/api/crawl<br/>/api/crawl-jobs"]
+    A_AI["/api/ai<br/>extraction, summary"]
+    A_SEARCH["/api/search<br/>/api/market-search"]
+    A_CHANGE["/api/changes"]
+    A_PDF["/api/pdf<br/>/api/datasheets"]
+    A_HEALTH["/api/health"]
+  end
+
+  JWT --> MW
+  PROTECTED --> PAGES
+  PAGES --> API_ROUTES
+
+  style AUTH_FLOW fill:#FFF3EB,stroke:#F26322,stroke-width:2px
+  style MIDDLEWARE fill:#F3F4F6,stroke:#4B5563,stroke-width:2px
+  style PAGES fill:#ECFDF5,stroke:#059669,stroke-width:2px
+  style API_ROUTES fill:#EBF5FF,stroke:#2563EB,stroke-width:2px
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 3. DATA MODEL -->
+  <!-- ============================================ -->
+  <h2>3. Data Model</h2>
+  <p class="section-desc">Core domain entities and their relationships. Currently uses TypeScript static data modules with Prisma schema ready for PostgreSQL migration.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+erDiagram
+  Manufacturer ||--o{ Product : "produces"
+  Manufacturer ||--o{ RegionalWebsite : "has"
+  Manufacturer ||--o{ CrawlJob : "target of"
+  Product ||--o{ RegionalVariant : "has"
+  Product ||--o{ Specification : "has"
+  Product ||--o{ Certification : "has"
+  Product ||--o{ Accessory : "has"
+  Product ||--o{ RevisionEntry : "tracked by"
+  Product ||--o{ Datasheet : "documented in"
+  ChangeEvent }o--|| Product : "references"
+  ChangeEvent }o--|| Manufacturer : "about"
+
+  Manufacturer {
+    string id PK
+    string name
+    string country
+    string website
+    boolean isActive
+    int foundedYear
+    string description
+    string headquarters
+    int totalProducts
+  }
+
+  Product {
+    string id PK
+    string name
+    string manufacturer FK
+    string productType
+    int acPower
+    int mppt
+    float efficiency
+    int warranty
+    string communication
+    string sourceUrl
+    string sourceLanguage
+  }
+
+  RegionalVariant {
+    string region
+    string model
+    string voltage
+    string frequency
+    string certifications
+    string countries
+  }
+
+  ChangeEvent {
+    string id PK
+    date date
+    enum type
+    string productId FK
+    string manufacturer FK
+    string description
+    string source
+    enum severity
+    string region
+    string country
+  }
+
+  CrawlJob {
+    string id PK
+    string manufacturer FK
+    string url
+    enum status
+    datetime startTime
+    int pagesProcessed
+    int productsFound
+  }
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 4. AI PIPELINE DETAIL -->
+  <!-- ============================================ -->
+  <h2>4. AI / ML Pipeline Detail</h2>
+  <p class="section-desc">Multi-language crawling, extraction, and intelligence workflow powered by LLM services.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+flowchart LR
+  subgraph INGEST["Data Ingestion"]
+    A["Manufacturer URLs<br/>(70+ regional sites)"] --> B["Playwright Crawler<br/><i>Headless browser</i>"]
+    B --> C{"Language<br/>Detection"}
+    C -->|"Non-English"| D["GPT-4o-mini<br/>Translation<br/><i>10 languages</i>"]
+    C -->|"English"| E["Raw HTML/Text"]
+    D --> E
+    F["PDF Datasheets"] --> G["pdf-parse<br/>Text Extraction"]
+    G --> E
+    H["SerpAPI<br/>Web Search"] --> E
+  end
+
+  subgraph PROCESS["AI Processing"]
+    E --> I["Anthropic Claude<br/><b>Structured Extraction</b><br/><i>Specs, certs, pricing</i>"]
+    I --> J["OpenAI GPT-4o<br/><b>Summarization</b><br/><i>Product summaries,<br/>change descriptions</i>"]
+    I --> K["OpenAI Embeddings<br/><b>text-embedding-3</b><br/><i>Semantic vectors</i>"]
+  end
+
+  subgraph STORE["Storage"]
+    J --> L["comprehensive-data.ts<br/><i>changeEvents[]</i>"]
+    J --> M["products-data.ts<br/><i>Product specs</i>"]
+    I --> N["PostgreSQL<br/><i>Prisma ORM</i>"]
+    K --> O["pgvector<br/><i>Similarity search</i>"]
+  end
+
+  subgraph QUEUE["Job Orchestration"]
+    P["BullMQ Workers"] --> B
+    Q["node-cron<br/>Scheduler"] --> P
+    R["Redis"] --> P
+  end
+
+  style INGEST fill:#F3E8FF,stroke:#7C3AED,stroke-width:2px
+  style PROCESS fill:#FFF3EB,stroke:#F26322,stroke-width:2px
+  style STORE fill:#EBF5FF,stroke:#2563EB,stroke-width:2px
+  style QUEUE fill:#F3F4F6,stroke:#4B5563,stroke-width:2px
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 5. FRONTEND COMPONENT ARCHITECTURE -->
+  <!-- ============================================ -->
+  <h2>5. Frontend Component Architecture</h2>
+  <p class="section-desc">React 19 component hierarchy with layout shell, shared UI library, and page-specific feature components.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TB
+  subgraph ROOT["Root Layout"]
+    LAYOUT["layout.tsx<br/><i>Inter font, metadata</i>"]
+    PROVIDERS["Providers<br/><i>SessionProvider (NextAuth)</i>"]
+    APPSHELL["AppShell<br/><i>Conditional sidebar/header<br/>for auth vs. app pages</i>"]
+  end
+
+  subgraph SHELL["App Shell"]
+    SIDEBAR["Sidebar (240px)<br/><i>7 nav items<br/>Enphase orange active</i>"]
+    HEADER["Header (48px)<br/><i>Clean white bar</i>"]
+    CONTENT["Content Area<br/><i>max-w-1400px<br/>bg-gray-50/50</i>"]
+  end
+
+  subgraph SHARED["Shared Components"]
+    UI_LIB["UI Library<br/><i>Radix UI primitives<br/>shadcn/ui components</i>"]
+    CHARTS["Charts<br/><i>Recharts: Bar, Line,<br/>Pie, Area, Radar</i>"]
+    MAPS["Maps<br/><i>react-simple-maps<br/>Interactive world map</i>"]
+    FILTERS["Filters<br/><i>Multi-select, date range,<br/>region, manufacturer</i>"]
+    TABLES["Tables<br/><i>Sortable, comparison</i>"]
+    ANIM["Animations<br/><i>Framer Motion</i>"]
+  end
+
+  subgraph PAGES_C["Page Components"]
+    P_DASH["Dashboard<br/><i>KPI cards, trend charts,<br/>recent launches</i>"]
+    P_SEARCH["Product Library<br/><i>Filterable grid,<br/>spec cards</i>"]
+    P_COMPARE["Compare<br/><i>Side-by-side table,<br/>AI summary engine</i>"]
+    P_CHANGES["Latest News<br/><i>Timeline, severity badges,<br/>source links</i>"]
+    P_MFRS["Manufacturers<br/><i>Grid cards → detail<br/>with world map</i>"]
+    P_PIPE["AI Pipeline<br/><i>Crawl status,<br/>multi-lang tab</i>"]
+  end
+
+  LAYOUT --> PROVIDERS --> APPSHELL
+  APPSHELL --> SIDEBAR
+  APPSHELL --> HEADER
+  APPSHELL --> CONTENT
+  CONTENT --> PAGES_C
+  PAGES_C --> SHARED
+
+  style ROOT fill:#F3F4F6,stroke:#4B5563,stroke-width:2px
+  style SHELL fill:#ECFDF5,stroke:#059669,stroke-width:2px
+  style SHARED fill:#EBF5FF,stroke:#2563EB,stroke-width:2px
+  style PAGES_C fill:#FFF3EB,stroke:#F26322,stroke-width:2px
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 6. DEPLOYMENT & INFRASTRUCTURE -->
+  <!-- ============================================ -->
+  <h2>6. Deployment & Infrastructure</h2>
+  <p class="section-desc">Target deployment topology. Currently running as local development server with static data modules.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+  subgraph CLIENT["Client"]
+    BROWSER["Browser<br/><i>React 19 SPA</i>"]
+  end
+
+  subgraph EDGE["Edge / CDN"]
+    VERCEL["Vercel / Node.js<br/><i>Next.js 15 SSR + API</i>"]
+    STATIC_A["Static Assets<br/><i>CSS, JS bundles</i>"]
+  end
+
+  subgraph SERVICES["Backend Services"]
+    PG_S["PostgreSQL<br/><i>+ pgvector extension</i>"]
+    REDIS_S["Redis<br/><i>BullMQ queues</i>"]
+    CRON_S["Cron Workers<br/><i>Scheduled crawl jobs</i>"]
+  end
+
+  subgraph EXT_API["External APIs"]
+    OPENAI_S["OpenAI API<br/><i>GPT-4o, Embeddings</i>"]
+    ANTHRO_S["Anthropic API<br/><i>Claude Extraction</i>"]
+    SERP_S["SerpAPI<br/><i>Web Search</i>"]
+    AZURE_S["Azure AD<br/><i>SSO (optional)</i>"]
+  end
+
+  BROWSER -->|"HTTPS"| VERCEL
+  VERCEL --> STATIC_A
+  VERCEL -->|"Prisma"| PG_S
+  VERCEL -->|"ioredis"| REDIS_S
+  CRON_S -->|"BullMQ"| REDIS_S
+  CRON_S --> OPENAI_S
+  CRON_S --> ANTHRO_S
+  CRON_S --> SERP_S
+  VERCEL -.->|"Optional"| AZURE_S
+
+  style CLIENT fill:#F3F4F6,stroke:#4B5563,stroke-width:2px
+  style EDGE fill:#ECFDF5,stroke:#059669,stroke-width:2px
+  style SERVICES fill:#EBF5FF,stroke:#2563EB,stroke-width:2px
+  style EXT_API fill:#FFF3EB,stroke:#F26322,stroke-width:2px
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- TECHNOLOGY LEGEND -->
+  <!-- ============================================ -->
+  <h2>7. Technology Stack</h2>
+  <div class="legend">
+    <div class="legend-item">
+      <h4>Frontend</h4>
+      <div class="tech-stack">
+        <span class="badge badge-orange">React 19</span>
+        <span class="badge badge-orange">Next.js 15</span>
+        <span class="badge badge-orange">TypeScript 5</span>
+        <span class="badge badge-orange">Tailwind CSS 4</span>
+      </div>
+      <p style="margin-top:6px">Recharts, react-simple-maps, Framer Motion, Radix UI, shadcn/ui, Lucide icons</p>
+    </div>
+    <div class="legend-item">
+      <h4>Authentication</h4>
+      <div class="tech-stack">
+        <span class="badge badge-green">NextAuth.js 4</span>
+        <span class="badge badge-green">JWT</span>
+        <span class="badge badge-green">bcryptjs</span>
+      </div>
+      <p style="margin-top:6px">Credentials provider, role-based access (Admin/Editor/Viewer), Azure AD SSO ready</p>
+    </div>
+    <div class="legend-item">
+      <h4>AI / ML Services</h4>
+      <div class="tech-stack">
+        <span class="badge badge-purple">OpenAI GPT-4o</span>
+        <span class="badge badge-purple">Anthropic Claude</span>
+        <span class="badge badge-purple">text-embedding-3</span>
+      </div>
+      <p style="margin-top:6px">Extraction, summarization, translation (10 languages), vector embeddings</p>
+    </div>
+    <div class="legend-item">
+      <h4>Data & Storage</h4>
+      <div class="tech-stack">
+        <span class="badge badge-blue">PostgreSQL</span>
+        <span class="badge badge-blue">Prisma ORM</span>
+        <span class="badge badge-blue">pgvector</span>
+        <span class="badge badge-blue">Redis</span>
+      </div>
+      <p style="margin-top:6px">BullMQ job queue, node-cron scheduler, static TypeScript data modules (current)</p>
+    </div>
+    <div class="legend-item">
+      <h4>Crawling & Ingestion</h4>
+      <div class="tech-stack">
+        <span class="badge badge-gray">Playwright</span>
+        <span class="badge badge-gray">pdf-parse</span>
+        <span class="badge badge-gray">SerpAPI</span>
+      </div>
+      <p style="margin-top:6px">Headless browser crawling, hreflang regional URL discovery, PDF text extraction</p>
+    </div>
+    <div class="legend-item">
+      <h4>Data Coverage</h4>
+      <div class="tech-stack">
+        <span class="badge badge-orange">14 Manufacturers</span>
+        <span class="badge badge-orange">81+ Products</span>
+        <span class="badge badge-orange">54 Countries</span>
+      </div>
+      <p style="margin-top:6px">91 change events (2023–2026), 70+ regional website URLs, 10 language support</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    themeVariables: {
+      primaryColor: '#FFF3EB',
+      primaryBorderColor: '#F26322',
+      primaryTextColor: '#1a1a1a',
+      lineColor: '#9CA3AF',
+      secondaryColor: '#EBF5FF',
+      tertiaryColor: '#ECFDF5',
+      fontSize: '13px',
+      fontFamily: 'Inter, -apple-system, sans-serif'
+    },
+    flowchart: {
+      curve: 'basis',
+      padding: 16,
+      htmlLabels: true,
+      useMaxWidth: true
+    },
+    er: {
+      useMaxWidth: true,
+      fontSize: 12
+    }
+  });
+</script>
+</body>
+</html>

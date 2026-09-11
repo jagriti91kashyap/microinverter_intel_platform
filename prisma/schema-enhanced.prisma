@@ -1,0 +1,472 @@
+// Enhanced database schema for Microinverter Research Platform
+// This schema supports all the new features including web search, AI extraction, and market research
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User management with enhanced roles
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  role          UserRole @default(USER)
+  department    String?
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  savedSearches     SavedSearch[]
+  productComparisons ProductComparison[]
+  crawlJobs         CrawlJob[]
+  aiExtractions     AIExtraction[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  ANALYST
+  RESEARCHER
+}
+
+// Enhanced manufacturer information with market data
+model Manufacturer {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  country     String
+  website     String
+  isActive    Boolean @default(true)
+  foundedYear Int?
+  description String?
+  
+  // Enhanced fields for market research
+  marketPresence String[] // Countries where they operate
+  headquarters   String?
+  supportEmail   String?
+  supportPhone   String?
+  
+  // AI enhancement fields
+  aiSummary       String?
+  lastCrawledAt    DateTime?
+  confidenceScore  Float?
+  embedding        Float[] // Vector for similarity search
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  products           Product[]
+  productAvailability ProductAvailability[]
+  productCertifications ProductCertification[]
+  crawlJobs          CrawlJob[]
+  aiExtractions      AIExtraction[]
+
+  @@map("manufacturers")
+}
+
+// Enhanced product model with comprehensive specifications
+model Product {
+  id                 String        @id @default(cuid())
+  name               String
+  series             String?
+  model              String?
+  manufacturerId     String
+  acPower            Float? // in Watts
+  maxModuleSize      Float? // in Watts
+  voltage            Float? // in Volts
+  mppt               Int?
+  efficiency         Float? // percentage
+  warranty           Int? // in years
+  weight             Float? // in kg
+  dimensions         String?
+  monitoringPlatform String?
+  status             ProductStatus @default(ACTIVE)
+  imageUrl           String?
+  datasheetUrl       String?
+  productUrl         String?
+
+  // Enhanced fields
+  maxInputCurrent    Float? // in Amps
+  communicationMethod String?
+  ipRating           String?
+  operatingTemperature String? // "-40°C to +85°C" format
+  gridCertifications String[]
+  
+  // AI enhancement fields
+  aiSummary          String?
+  embedding          Float[] // Vector for similarity search
+  lastCrawledAt       DateTime?
+  confidenceScore     Float?
+  extractedAt         DateTime?
+  
+  // Market availability
+  marketAvailability  String[] // Countries where available
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  manufacturer           Manufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  specifications         ProductSpecification[]
+  certifications         ProductCertification[]
+  accessories            CompatibleAccessory[]
+  availability           ProductAvailability[]
+  datasheets             Datasheet[]
+  aiExtractions          AIExtraction[]
+  crawlJobs              CrawlJob[]
+  productComparisons     ProductComparisonProduct[]
+
+  @@map("products")
+}
+
+enum ProductStatus {
+  ACTIVE
+  DISCONTINUED
+  ANNOUNCED
+  COMING_SOON
+}
+
+// Enhanced product specifications with AI confidence
+model ProductSpecification {
+  id          String   @id @default(cuid())
+  productId   String
+  category    String
+  name        String
+  value       String
+  unit        String?
+  description String?
+  confidence  Float    @default(0.0) // 0.0 to 1.0
+  
+  // Source tracking
+  sourceId    String?
+  sourceUrl   String?
+  pageNumber  Int?
+  extractedAt DateTime @default(now())
+  verifiedAt  DateTime?
+  isVerified  Boolean  @default(false)
+  
+  // AI enhancement fields
+  extractionMethod String? // "table", "ai", "manual"
+  normalizedValue String? // Standardized value
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_specifications")
+}
+
+// Enhanced product certifications with market-specific data
+model ProductCertification {
+  id           String    @id @default(cuid())
+  productId    String
+  country      String
+  standard     String // "UL 1741", "IEC 62109", etc.
+  certified    Boolean   @default(false)
+  dateObtained DateTime?
+  expiresAt    DateTime?
+  certificateUrl String?
+  
+  // Source tracking
+  sourceUrl    String?
+  verifiedAt   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  manufacturerId String
+
+  @@map("product_certifications")
+}
+
+// Market availability information
+model ProductAvailability {
+  id          String   @id @default(cuid())
+  productId   String
+  country     String
+  region      String?
+  isAvailable Boolean  @default(true)
+  distributor String?
+  priceRange  String? // "$200-300"
+  leadTime    String? // "2-4 weeks"
+  notes       String?
+  
+  // Source tracking
+  sourceUrl   String?
+  lastChecked DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  manufacturerId String
+
+  @@map("product_availability")
+}
+
+// Enhanced datasheet management with processing metadata
+model Datasheet {
+  id          String   @id @default(cuid())
+  productId   String
+  url         String   @unique
+  filename    String
+  fileSize    Int      // in bytes
+  pageCount   Int
+  checksum    String   // MD5 hash
+  mimeType    String   @default("application/pdf")
+  
+  // Processing metadata
+  extractedAt DateTime @default(now())
+  processedAt DateTime?
+  textContent String?  // Extracted text (for search)
+  metadata    Json?    // PDF metadata
+  
+  // AI enhancement fields
+  aiProcessed Boolean  @default(false)
+  extractionConfidence Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("datasheets")
+}
+
+// Enhanced crawl job management with detailed tracking
+model CrawlJob {
+  id          String     @id @default(cuid())
+  url         String
+  crawlType   CrawlType
+  
+  // Job metadata
+  status      JobStatus  @default(PENDING)
+  priority    Int        @default(5)
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  
+  // Results tracking
+  productsFound    Int @default(0)
+  datasheetsFound  Int @default(0)
+  specificationsExtracted Int @default(0)
+  imagesFound      Int @default(0)
+  
+  // Configuration
+  config      Json? // Crawl configuration options
+  
+  // Relations
+  manufacturerId String?
+  manufacturer Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  userId       String?
+  user         User? @relation(fields: [userId], references: [id])
+  aiExtractions AIExtraction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("crawl_jobs")
+}
+
+enum CrawlType {
+  MANUFACTURER
+  PRODUCT_PAGE
+  DATASHEET
+  CHANGE_DETECTION
+  MARKET_RESEARCH
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// AI extraction tracking and results
+model AIExtraction {
+  id          String   @id @default(cuid())
+  sourceUrl   String
+  sourceType  String   // "pdf", "webpage", "datasheet"
+  content     String   // Original content
+  extractedData Json?  // Extracted structured data
+  
+  // AI metadata
+  model       String   // "gpt-4-turbo-preview", etc.
+  confidence  Float    @default(0.0)
+  tokensUsed  Int?
+  processingTimeMs Int?
+  
+  // Results
+  specifications ProductSpecification[]
+  summary      String?
+  categories   Json?    // Categorized data
+  
+  // Relations
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  manufacturerId String?
+  manufacturer Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  userId       String?
+  user         User? @relation(fields: [userId], references: [id])
+  crawlJobId   String?
+  crawlJob     CrawlJob? @relation(fields: [crawlJobId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ai_extractions")
+}
+
+// Enhanced saved searches with filters
+model SavedSearch {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  
+  // Search parameters
+  query       String?
+  filters     Json?    // Search filters object
+  sortBy      String?  // Field to sort by
+  sortOrder   String?  // "asc" or "desc"
+  
+  // Usage tracking
+  lastUsedAt  DateTime?
+  useCount    Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_searches")
+}
+
+// Enhanced product comparisons with sharing
+model ProductComparison {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  
+  // Sharing
+  shareToken  String?  @unique
+  isPublic    Boolean  @default(false)
+  expiresAt   DateTime?
+  
+  // Usage tracking
+  viewCount   Int      @default(0)
+  lastViewedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products ProductComparisonProduct[]
+
+  @@map("product_comparisons")
+}
+
+// Junction table for product comparisons
+model ProductComparisonProduct {
+  id             String @id @default(cuid())
+  comparisonId   String
+  productId      String
+  position       Int    // Order in comparison (1, 2, 3, 4)
+  
+  createdAt DateTime @default(now())
+
+  // Relations
+  comparison ProductComparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_comparison_products")
+}
+
+// Compatible accessories
+model CompatibleAccessory {
+  id          String   @id @default(cuid())
+  productId   String
+  name        String
+  category    String
+  description String?
+  required    Boolean  @default(false)
+  url         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("compatible_accessories")
+}
+
+// Web search results cache
+model WebSearchCache {
+  id          String   @id @default(cuid())
+  query       String
+  results     Json     // Cached search results
+  source      String   // "serpapi", "google", etc.
+  expiresAt   DateTime
+  
+  createdAt DateTime @default(now())
+
+  @@map("web_search_cache")
+}
+
+// Market research data
+model MarketResearch {
+  id          String   @id @default(cuid())
+  country     String
+  region      String?
+  marketSize  Float?   // in MW
+  growthRate  Float?   // percentage
+  competitors String[] // Manufacturer IDs
+  trends      Json?    // Market trends data
+  regulations Json?    // Local regulations
+  
+  // Source tracking
+  sourceUrl   String?
+  lastUpdated DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("market_research")
+}
+
+// System configuration and settings
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}

@@ -1,0 +1,417 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [pgvector]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      UserRole @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  savedSearches SavedSearch[]
+  comparisons   ProductComparison[]
+
+  @@map("users")
+}
+
+model Manufacturer {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  website     String?
+  logoUrl     String?
+  description String?
+  country     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products Product[]
+  sources  DataSource[]
+
+  @@map("manufacturers")
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  series           String?
+  model            String?
+  manufacturerId   String
+  acPower          Float?   // in watts
+  maxModuleSize    Float?   // in watts
+  voltage          Float?   // in volts
+  mppt             Int?     // number of MPPTs
+  efficiency       Float?   // percentage
+  warranty         Int?     // in years
+  weight           Float?   // in kg
+  dimensions       String?  // JSON string for dimensions
+  monitoringPlatform String?
+  status           ProductStatus @default(ACTIVE)
+  imageUrl         String?
+  datasheetUrl     String?
+  productUrl       String?
+  
+  // AI Enhancement Fields
+  aiSummary        String?  // AI-generated product summary
+  embedding        Bytes?  // Vector embedding for semantic search (stored as bytes)
+  lastCrawledAt    DateTime? // Last time this product was crawled
+  confidenceScore  Float?  @default(1.0) // Overall AI confidence score
+  extractedAt      DateTime? // When AI extraction was performed
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  manufacturer     Manufacturer @relation(fields: [manufacturerId], references: [id])
+  specifications   ProductSpecification[]
+  certifications   ProductCertification[]
+  accessories      CompatibleAccessory[]
+  sources          DataSource[]
+  changeHistory    ProductChangeHistory[]
+  comparisons      ProductComparisonItem[]
+  availability     ProductAvailability[]
+  datasheets       Datasheet[]
+
+  @@unique([manufacturerId, name, model])
+  @@map("products")
+}
+
+model ProductSpecification {
+  id          String  @id @default(cuid())
+  productId   String
+  category    String  // e.g., "Electrical", "Mechanical", "Environmental"
+  name        String  // e.g., "Max AC Power", "Operating Temperature"
+  value       String
+  unit        String?
+  description String?
+  confidence  Float   @default(1.0) // AI extraction confidence
+  sourceId    String?
+  
+  // AI Enhancement Fields
+  extractedAt  DateTime @default(now()) // When this spec was AI-extracted
+  sourceUrl   String?  // Original URL where spec was found
+  pageNumber  Int?     // Page number in PDF if applicable
+  verifiedAt   DateTime? // When this spec was manually verified
+  isVerified   Boolean @default(false) // Manual verification status
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+  source  DataSource? @relation(fields: [sourceId], references: [id])
+
+  @@map("product_specifications")
+}
+
+model ProductCertification {
+  id          String   @id @default(cuid())
+  productId   String
+  country     String
+  standard    String  // e.g., "UL 1741", "IEC 62109"
+  certified   Boolean
+  dateObtained DateTime?
+  expiresAt   DateTime?
+  documentUrl String?
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_certifications")
+}
+
+model CompatibleAccessory {
+  id          String  @id @default(cuid())
+  productId   String
+  name        String
+  type        String  // e.g., "Cable", "Connector", "Mounting"
+  isRequired  Boolean @default(false)
+  description String?
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("compatible_accessories")
+}
+
+model DataSource {
+  id          String   @id @default(cuid())
+  productId   String
+  manufacturerId String?
+  url         String
+  type        SourceType @default(DATASHEET)
+  title       String?
+  lastChecked DateTime @default(now())
+  lastCrawled  DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  product      Product? @relation(fields: [productId], references: [id])
+  manufacturer Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  specifications ProductSpecification[]
+
+  @@map("data_sources")
+}
+
+model ProductChangeHistory {
+  id          String   @id @default(cuid())
+  productId   String
+  field       String   // which field changed
+  oldValue    String?
+  newValue    String?
+  changeType  ChangeType
+  detectedAt  DateTime @default(now())
+  sourceUrl   String?
+  confidence  Float    @default(1.0)
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_change_history")
+}
+
+model ProductAvailability {
+  id          String   @id @default(cuid())
+  productId   String
+  country     String
+  region      String?
+  isAvailable Boolean  @default(true)
+  price       Float?   // in local currency
+  currency    String?
+  supplier    String?
+  lastChecked DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([productId, country])
+  @@map("product_availability")
+}
+
+model SavedSearch {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  query       String   // JSON string of search parameters
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("saved_searches")
+}
+
+model ProductComparison {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String?
+  productIds  String   // JSON array of product IDs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shareToken  String?  @unique @default(cuid())
+
+  // Relations
+  user      User @relation(fields: [userId], references: [id])
+  items     ProductComparisonItem[]
+
+  @@map("product_comparisons")
+}
+
+model ProductComparisonItem {
+  id             String @id @default(cuid())
+  comparisonId   String
+  productId      String
+  position       Int    // order in comparison
+
+  // Relations
+  comparison ProductComparison @relation(fields: [comparisonId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@unique([comparisonId, productId])
+  @@map("product_comparison_items")
+}
+
+model Datasheet {
+  id          String   @id @default(cuid())
+  productId   String
+  url         String   // Original PDF URL
+  filename    String   // Stored filename
+  fileSize    Int      // File size in bytes
+  pageCount   Int?     // Number of pages
+  extractedAt DateTime @default(now()) // When PDF was processed
+  checksum    String   @unique // MD5 hash for duplicate detection
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("datasheets")
+}
+
+model CrawlJob {
+  id          String      @id @default(cuid())
+  manufacturerId String?
+  userId      String?
+  url         String
+  status      JobStatus   @default(PENDING)
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  productsFound Int    @default(0)
+  datasheetsFound Int  @default(0) // Number of datasheets found
+  specificationsExtracted Int @default(0) // Number of specs extracted
+  crawlType   CrawlType  @default(MANUFACTURER) // Type of crawl
+  priority    Int        @default(5) // 1-10 priority
+  retryCount  Int        @default(0)
+  itemsProcessed Int @default(0) // Total items processed
+  itemsCreated   Int @default(0) // New items created
+  itemsUpdated   Int @default(0) // Existing items updated
+  config        Json?      // Job configuration
+  metadata    Json?      // Additional crawl metadata
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("crawl_jobs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum ProductStatus {
+  ACTIVE
+  DISCONTINUED
+  ANNOUNCED
+  COMING_SOON
+}
+
+enum SourceType {
+  DATASHEET
+  WEBSITE
+  MANUAL
+  PRESS_RELEASE
+  OTHER
+}
+
+enum ChangeType {
+  NEW_PRODUCT
+  SPECIFICATION_CHANGE
+  PRICE_CHANGE
+  AVAILABILITY_CHANGE
+  DISCONTINUATION
+  WARRANTY_UPDATE
+  DATASHEET_REVISION
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum CrawlType {
+  MANUFACTURER    // Crawl manufacturer website
+  PRODUCT_PAGE    // Crawl specific product page
+  DATASHEET       // Process datasheet PDF
+  CHANGE_DETECTION // Check for changes
+}
+
+// Additional models for enterprise features
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  type        NotificationType @default(INFO)
+  isRead      Boolean  @default(false)
+  metadata    Json?    // Additional notification data
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  productId   String?
+  action      String   // e.g., "CREATE_PRODUCT", "UPDATE_SPECIFICATION"
+  resource    String   // e.g., "Product", "Manufacturer"
+  resourceId  String?
+  oldValues   Json?    // Previous values
+  newValues   Json?    // New values
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?    // Additional metadata
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model SearchIndex {
+  id          String   @id @default(cuid())
+  productId   String   @unique
+  content     String   // Concatenated searchable content
+  embedding   Bytes    // Semantic embedding for similarity search (stored as bytes)
+  lastIndexed DateTime @default(now())
+  version     Int      @default(1)
+
+  @@map("search_index")
+}
+
+model SystemMetrics {
+  id          String   @id @default(cuid())
+  metric      String   // e.g., "products_count", "crawl_success_rate"
+  value       Float
+  unit        String?
+  timestamp   DateTime @default(now())
+  metadata    Json?
+
+  @@map("system_metrics")
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  key         String   @unique
+  permissions String[] // Array of allowed permissions
+  isActive    Boolean  @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("api_keys")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  PRODUCT_UPDATE
+  NEW_PRODUCT
+  DISCONTINUATION
+  SYSTEM_ALERT
+}
