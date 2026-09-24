@@ -161,7 +161,7 @@ export const manufacturers: Manufacturer[] = [
     { language: 'ja', url: 'https://apsystems.com/jp', region: 'Asia Pacific', country: 'Japan' },
     { language: 'pt-BR', url: 'https://latam.apsystems.com/br', region: 'Latin America', country: 'Brazil' },
   ]},
-  { id: '3', name: 'Hoymiles', country: 'China', website: 'https://hoymiles.com', isActive: true, foundedYear: 2012, description: 'Fast-growing Chinese microinverter manufacturer with 17.4% global shipment share (2025, S&P Global). #1 MI manufacturer by volume outside the US. Product lines span HiFlow/HiFlow Pro (plug-in DIY), HMS (residential), HMT/MiT (C&I), and energy storage. Over 1 million units operating in Brazil alone.', headquarters: 'Hangzhou, China', totalProducts: 10, regionalWebsites: [
+  { id: '3', name: 'Hoymiles', country: 'China', website: 'https://hoymiles.com', isActive: true, foundedYear: 2012, description: 'Fast-growing Chinese microinverter manufacturer with 17.4% global shipment share (2025, S&P Global). #1 MI manufacturer by volume outside the US. Product lines span HiFlow/HiFlow Pro (plug-in DIY), HiFlow Pro LV (NA 120V), HMS (residential), HMT/MiT (C&I), MIS-W Pro (high-power), and energy storage. Over 1 million units operating in Brazil alone.', headquarters: 'Hangzhou, China', totalProducts: 38, regionalWebsites: [
     { language: 'en', url: 'https://hoymiles.com', region: 'Global', country: 'Global' },
     { language: 'de', url: 'https://hoymiles.com/de', region: 'Europe', country: 'Germany' },
     { language: 'fr', url: 'https://hoymiles.com/fr', region: 'Europe', country: 'France' },
@@ -246,6 +246,21 @@ export const manufacturers: Manufacturer[] = [
     { language: 'de', url: 'https://www.tesla.com/de_de/solarpanels', region: 'Europe', country: 'Germany' },
     { language: 'fr', url: 'https://www.tesla.com/fr_fr/solarpanels', region: 'Europe', country: 'France' },
     { language: 'ja', url: 'https://www.tesla.com/ja_jp/solarpanels', region: 'Asia Pacific', country: 'Japan' },
+  ]},
+  { id: '19', name: 'Anker', country: 'China', website: 'https://www.anker.com/anker-solix', isActive: true, foundedYear: 2011, description: 'Consumer electronics giant expanding into solar energy with Anker SOLIX brand. Solarbank series combines microinverters with LiFePO4 battery storage for plug-and-play balcony solar. Available across EU markets.', headquarters: 'Shenzhen, China', totalProducts: 1, regionalWebsites: [
+    { language: 'en', url: 'https://www.anker.com/anker-solix', region: 'Global', country: 'Global' },
+    { language: 'de', url: 'https://www.anker.com/eu-de/anker-solix', region: 'Europe', country: 'Germany' },
+    { language: 'fr', url: 'https://www.anker.com/eu-fr/anker-solix', region: 'Europe', country: 'France' },
+  ]},
+  { id: '20', name: 'Marstek', country: 'China', website: 'https://www.marstek.com', isActive: true, foundedYear: 2021, description: 'Plug-in AC-coupled energy storage specialist. Venus series LiFePO4 batteries for EU balcony solar. 800VA/1.5kVA output with backup. Bluetooth + WiFi monitoring.', headquarters: 'Shenzhen, China', totalProducts: 1, regionalWebsites: [
+    { language: 'en', url: 'https://www.marstek.com', region: 'Global', country: 'Global' },
+    { language: 'de', url: 'https://www.marstek.com/de', region: 'Europe', country: 'Germany' },
+  ]},
+  { id: '21', name: 'EcoFlow', country: 'China', website: 'https://www.ecoflow.com', isActive: true, foundedYear: 2017, description: 'Portable power and clean energy company. STREAM series plug-and-play microinverters and battery storage for balcony solar. IP67-rated with WiFi monitoring. EN 50549-1 certified for EU markets. US STREAM Ultra with NEMA 4 rating.', headquarters: 'Shenzhen, China', totalProducts: 2, regionalWebsites: [
+    { language: 'en', url: 'https://www.ecoflow.com', region: 'Global', country: 'Global' },
+    { language: 'de', url: 'https://eu.ecoflow.com', region: 'Europe', country: 'Germany' },
+    { language: 'fr', url: 'https://fr.ecoflow.com', region: 'Europe', country: 'France' },
+    { language: 'en', url: 'https://us.ecoflow.com', region: 'North America', country: 'United States' },
   ]},
 ];
 

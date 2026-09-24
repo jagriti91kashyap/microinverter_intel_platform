@@ -94,6 +94,17 @@ function makeAccessories(mfg: string): Accessory[] {
       { id: 'a-tsl-1', name: 'Powerwall 3', type: 'Battery Storage', compatible: true },
       { id: 'a-tsl-2', name: 'Tesla Gateway 2', type: 'Communication', compatible: true },
     ],
+    'Anker': [
+      { id: 'a-ank-1', name: 'Anker SOLIX BP5000 Battery Module', type: 'Battery Storage', compatible: true },
+      { id: 'a-ank-2', name: 'Anker SOLIX Smart Meter', type: 'Monitoring', compatible: true },
+    ],
+    'Marstek': [
+      { id: 'a-mst-1', name: 'Marstek Venus Expansion Battery', type: 'Battery Storage', compatible: true },
+    ],
+    'EcoFlow': [
+      { id: 'a-eco-1', name: 'EcoFlow STREAM Battery', type: 'Battery Storage', compatible: true },
+      { id: 'a-eco-2', name: 'EcoFlow Smart Plug', type: 'Monitoring', compatible: true },
+    ],
   };
   return map[mfg] || [];
 }
@@ -134,6 +145,9 @@ function deriveProductType(name: string, series: string, mfgName: string, _acPow
   if (mfgName === 'SMA Solar Technology' && n.includes('smart energy')) return 'Hybrid Inverter';
   // AC-Coupled Inverter
   if (mfgName === 'FoxESS' && s === 'ac1-g2') return 'AC-Coupled Inverter';
+  // Plug-in Battery Storage (AC-coupled ESS)
+  if (n.includes('venus') || n.includes('solarbank') || (n.includes('stream') && n.includes('ultra'))) return 'Plug-in Battery Storage';
+  if (n.includes('nook')) return 'Plug-in Battery Storage';
   // Integrated Solar+Battery
   if (n.includes('powerwall')) return 'Integrated Solar Inverter + Battery';
   // String Inverters (DC-optimized, no module-level topology)
@@ -191,7 +205,7 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
   const m = (idx: number) => manufacturers[idx];
   // Enphase = 0, APsystems = 1, Hoymiles = 2, Deye = 3, Sigenergy = 4, Envertech = 5,
   // Chilicon = 6, SMA = 7, Fronius = 8, SolarEdge = 9, Tigo = 10, TSUN = 11, AEconversion = 12, Atmoce = 13,
-  // Q CELLS = 14, Huawei = 15, FoxESS = 16, Tesla = 17
+  // Q CELLS = 14, Huawei = 15, FoxESS = 16, Tesla = 17, Anker = 18, Marstek = 19, EcoFlow = 20
 
   // Country groups based on VERIFIED regional store data (enphase.com US/DE/AU/IN/JP stores, Jul 2025)
   // Enphase has different product lineups per region — do NOT use a single global list
@@ -226,6 +240,12 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
   const huaweiGlobal = [...EU, 'Australia', 'New Zealand', 'India', 'South Africa', 'Brazil', 'Japan', 'South Korea'];  // Huawei SUN2000: EU+APAC (NOT sold in US due to sanctions)
   const foxGlobal = [...EU, 'Australia', 'New Zealand', 'India', 'South Africa', 'Brazil', ...NA];  // FoxESS: global distribution
   const teslaNA = [...NA];  // Tesla: US/Canada/Mexico only for Solar Inverter
+  const hoyNA = [...NA];  // Hoymiles HiFlow Pro LV: 120V, UL 3700, NA only
+  const hoyLATAM = [...EU, 'Brazil', 'Chile', 'Argentina', 'Colombia', 'Mexico', 'Australia', 'South Africa'];  // Hoymiles MIS-W Pro: 220/230V, global markets incl LATAM
+  const ankerEU = [...EU];  // Anker SOLIX: EU markets, 230V
+  const marstekEU = [...EU];  // Marstek Venus: EU markets, 230V
+  const ecoflowEU = [...EU];  // EcoFlow STREAM: EU markets, 230V
+  const ecoflowNA = [...NA];  // EcoFlow STREAM Ultra: US (Utah), 120V
 
   const products: Product[] = [
     // ═══════════════════════════════════════════════════════
@@ -520,6 +540,49 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
     P('143','FoxESS H1-6.0-E-G2','H1-G2','H1-6.0-E-G2',9000,12000,230,2,97.08,10,22.0,'434 x 418 x 185','FoxCloud','ACTIVE','https://mm.fox-ess.com/download/upfiles/EN-H1-G2-Datasheet-V1.9-20250411.pdf','https://fox-ess.uk/h1-g2-hybrid-inverter/',m(16),foxGlobal,1700,'IN_STOCK','2025-01-01','2025-07-23','9kW single-phase hybrid G2. Dual MPPT. 6kW charge/discharge. EPS backup.',0.94,'1500W+','WiFi+LAN+4G','-25°C to +60°C','IP65','80-600 VDC','80-550 VDC','16 A/MPPT','<2%','15 W','75 VDC','97.08%','600 VDC','20 A'),
     P('144','FoxESS AC1-5.0-E-G2','AC1-G2','AC1-5.0-E-G2',5000,10000,230,1,97.08,10,22.0,'434 x 418 x 185','FoxCloud','ACTIVE','https://mm.fox-ess.com/download/upfiles/EN-H1-G2-Datasheet-V1.9-20250411.pdf','https://fox-ess.uk/h1-g2-hybrid-inverter/',m(16),foxGlobal,1400,'IN_STOCK','2025-01-01','2025-07-23','5kW AC-coupled inverter G2. For retrofit with existing PV. EQ/EP battery compatible.',0.94,'1500W+','WiFi+LAN+4G','-25°C to +60°C','IP65','80-480 VDC','N/A','40 A','<2%','15 W','80 VDC','97.08%','480 VDC','40 A'),
     P('145','FoxESS AC1-6.0-E-G2','AC1-G2','AC1-6.0-E-G2',6000,12000,230,1,97.08,10,22.0,'434 x 418 x 185','FoxCloud','ACTIVE','https://mm.fox-ess.com/download/upfiles/EN-H1-G2-Datasheet-V1.9-20250411.pdf','https://fox-ess.uk/h1-g2-hybrid-inverter/',m(16),foxGlobal,1600,'IN_STOCK','2025-01-01','2025-07-23','6kW AC-coupled inverter G2. Retrofit solution. 6kW charge/discharge. EPS backup.',0.94,'1500W+','WiFi+LAN+4G','-25°C to +60°C','IP65','80-480 VDC','N/A','40 A','<2%','15 W','80 VDC','97.08%','480 VDC','40 A'),
+
+    // ═══════════════════════════════════════════════════════
+    // HOYMILES — HiFlow Pro LV 1-in-1 series (NA 120V, UL 3700)
+    // Source: Hoymiles HiFlow Pro LV datasheet (hoymiles.com)
+    // 5 models: 360/391/420/450/500 VA, single MPPT, built-in WiFi+BT, Flex-S3 cable, Type B plug
+    // ═══════════════════════════════════════════════════════
+    P('154','Hoymiles HiFlow HMS-360-1WM-LV','HiFlow LV','HMS-360-1WM-LV',360,470,120,1,95.5,12,1.8,'182 x 164 x 30','S-Miles Home','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/us/product/microinverter/',m(2),hoyNA,99,'IN_STOCK','2025-03-01','2025-08-01','HiFlow Pro LV 1-in-1 360VA. 120V NA. Built-in WiFi+BT, no DTU needed. UL 3700. Flex-S3 cable with Type B plug.',0.92,'300-400W','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','14 A','<3%','50 mW','22 VDC','95.5%','60 VDC','20 A'),
+    P('155','Hoymiles HiFlow HMS-391-1WM-LV','HiFlow LV','HMS-391-1WM-LV',391,510,120,1,95.5,12,1.8,'182 x 164 x 30','S-Miles Home','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/us/product/microinverter/',m(2),hoyNA,109,'IN_STOCK','2025-03-01','2025-08-01','HiFlow Pro LV 1-in-1 391VA. 120V NA. WiFi+BT. UL 3700 + UL 1741 + IEEE 1547.',0.92,'300-400W','WiFi+BT','-40°C to +65°C','IP67','16-65 VDC','16-60 VDC','14 A','<3%','50 mW','22 VDC','95.5%','65 VDC','25 A'),
+    P('156','Hoymiles HiFlow HMS-420-1WM-LV','HiFlow LV','HMS-420-1WM-LV',420,540,120,1,95.5,12,1.8,'182 x 164 x 30','S-Miles Home','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/us/product/microinverter/',m(2),hoyNA,119,'IN_STOCK','2025-03-01','2025-08-01','HiFlow Pro LV 1-in-1 420VA. 120V NA. 1.8kg ultra-compact. WiFi+BT. NEMA 6/IP67.',0.92,'300-400W','WiFi+BT','-40°C to +65°C','IP67','16-65 VDC','16-60 VDC','14 A','<3%','50 mW','22 VDC','95.5%','65 VDC','25 A'),
+    P('157','Hoymiles HiFlow HMS-450-1WM-LV','HiFlow LV','HMS-450-1WM-LV',450,600,120,1,95.5,12,1.8,'182 x 164 x 30','S-Miles Home','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/us/product/microinverter/',m(2),hoyNA,129,'IN_STOCK','2025-03-01','2025-08-01','HiFlow Pro LV 1-in-1 450VA. 120V NA. For modules up to 600Wp. WiFi+BT. UL 3700.',0.92,'400-500W','WiFi+BT','-40°C to +65°C','IP67','16-65 VDC','16-60 VDC','15 A','<3%','50 mW','22 VDC','95.5%','65 VDC','25 A'),
+    P('158','Hoymiles HiFlow HMS-500-1WM-LV','HiFlow LV','HMS-500-1WM-LV',500,670,120,1,95.5,12,1.8,'182 x 164 x 30','S-Miles Home','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/us/product/microinverter/',m(2),hoyNA,139,'IN_STOCK','2025-03-01','2025-08-01','HiFlow Pro LV 1-in-1 500VA. 120V NA. Highest LV output. WiFi+BT. UL 3700 + IEEE 1547.',0.92,'400-500W','WiFi+BT','-40°C to +65°C','IP67','16-65 VDC','16-60 VDC','16 A','<3%','50 mW','22 VDC','95.5%','65 VDC','25 A'),
+
+    // HiFlow Pro 2-in-1 missing EU models (HMS-700-2WB, HMS-900-2WB)
+    P('159','Hoymiles HiFlow HMS-700-2WB','HiFlow','HMS-700-2WB',700,810,230,2,96.7,12,3.2,'261 x 180 x 35.1','S-Miles Home','ACTIVE','https://www.hoymiles.com/uploadfile/1/202507/db652b0e01.pdf','https://open-energy.hoymiles.com/products/microinverter/',m(2),hoy230V,159,'IN_STOCK','2025-01-01','2025-08-01','HiFlow 2-in-1 700W with built-in WiFi+BT. No DTU needed. EU 230V. Flex-S3 Schuko plug.',0.93,'600-800W','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','13 A/ch','<3%','50 mW','22 VDC','96.7%','60 VDC','20 A'),
+    P('160','Hoymiles HiFlow HMS-900-2WB','HiFlow','HMS-900-2WB',900,1000,230,2,96.5,12,3.2,'261 x 180 x 35.1','S-Miles Home','ACTIVE','https://www.hoymiles.com/uploadfile/1/202507/db652b0e01.pdf','https://open-energy.hoymiles.com/products/microinverter/',m(2),hoy230V,179,'IN_STOCK','2025-01-01','2025-08-01','HiFlow 2-in-1 900W with built-in WiFi+BT. For markets with >800W limits. EU 230V.',0.93,'800-1000W','WiFi+BT','-40°C to +65°C','IP67','16-65 VDC','16-60 VDC','15 A/ch','<3%','50 mW','22 VDC','96.5%','65 VDC','25 A'),
+
+    // ═══════════════════════════════════════════════════════
+    // HOYMILES — MIS-W Pro series (high-power 4-in-1 microinverters)
+    // Source: Hoymiles MIS-W Pro product page + datasheet
+    // 3 models: 2250/2500/2750 VA, 2 MPPT, 120V max input, built-in AFCI, C5-M corrosion rated
+    // ═══════════════════════════════════════════════════════
+    P('161','Hoymiles MIS-2250-W Pro','MIS-W Pro','MIS-2250-W Pro',2250,2500,230,2,97.5,12,6.5,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/products/microinverter/',m(2),hoyLATAM,349,'IN_STOCK','2025-06-01','2025-08-01','MIS-W Pro 2250VA. 2 MPPT, 120V max input. Built-in AFCI. C5-M salt corrosion resistance. WiFi+BT.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-120 VDC','16-100 VDC','20 A','<3%','50 mW','22 VDC','97.5%','120 VDC','20 A'),
+    P('162','Hoymiles MIS-2500-W Pro','MIS-W Pro','MIS-2500-W Pro',2500,2800,230,2,97.5,12,6.5,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/products/microinverter/',m(2),hoyLATAM,379,'IN_STOCK','2025-06-01','2025-08-01','MIS-W Pro 2500VA. 2 MPPT, 120V max input. Built-in AFCI. For 500-840Wp modules per string.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-120 VDC','16-100 VDC','20 A','<3%','50 mW','22 VDC','97.5%','120 VDC','20 A'),
+    P('163','Hoymiles MIS-2750-W Pro','MIS-W Pro','MIS-2750-W Pro',2750,3100,230,2,97.5,12,6.5,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://www.hoymiles.com/products/microinverter/','https://open-energy.hoymiles.com/products/microinverter/',m(2),hoyLATAM,409,'IN_STOCK','2025-06-01','2025-08-01','MIS-W Pro 2750VA flagship. 2 MPPT, 120V max DC. Built-in AFCI + C5-M corrosion. For 550-928Wp modules.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-120 VDC','16-100 VDC','20 A','<3%','50 mW','22 VDC','97.5%','120 VDC','20 A'),
+
+    // ═══════════════════════════════════════════════════════
+    // ANKER — 1 model (SOLIX Solarbank 4 E5000 Pro)
+    // Source: https://www.anker.com/products/anker-solix-solarbank-4-e5000-pro
+    // ═══════════════════════════════════════════════════════
+    P('164','Anker SOLIX Solarbank 4 E5000 Pro','SOLIX Solarbank','E5000-Pro',2500,5000,230,4,96.0,10,52.0,'530 x 380 x 310','Anker App','ACTIVE','https://www.anker.com/products/anker-solix-solarbank-4-e5000-pro','https://www.anker.com/products/anker-solix-solarbank-4-e5000-pro',m(18),ankerEU,1699,'IN_STOCK','2025-01-01','2025-08-01','All-in-one plug-in solar battery. 4 MPPT, 5024Wh LiFePO4. 800W/2500W AC output. IP66. 10yr warranty. Expandable to 30kWh with BP5000.',0.92,'1500W+','WiFi+BT','-20°C to +60°C','IP66','16-60 VDC','16-50 VDC','36 A x4','<3%','N/A','22 VDC','96.0%','60 VDC','45 A',{ 'Battery Capacity': '5024 Wh', 'Battery Type': 'LiFePO4', 'Cycle Life': '>6000' },'N/A','96.0%'),
+
+    // ═══════════════════════════════════════════════════════
+    // MARSTEK — 1 model (Venus B)
+    // Source: https://www.marstek.com/products/venus-b
+    // ═══════════════════════════════════════════════════════
+    P('165','Marstek Venus B','Venus','MST-BIE2-1500',800,1500,230,0,88.0,10,28.0,'395 x 455 x 86','Marstek App','ACTIVE','https://www.marstek.com/products/venus-b','https://www.marstek.com/products/venus-b',m(19),marstekEU,899,'IN_STOCK','2025-01-01','2025-08-01','Plug-in AC-coupled ESS. 2kWh LiFePO4 (314Ah). 800VA/1.5kVA output. Off-grid backup. 6000+ cycles. IP65. Schuko plug.',0.90,'600-800W','WiFi+BT','-20°C to +60°C','IP65','N/A','N/A','6.52 A','<3%','N/A','N/A','88.0%','N/A','N/A',{ 'Battery Capacity': '2009.6 Wh', 'Battery Type': 'LiFePO4', 'Cycle Life': '>6000', 'Backup Power': '1.5 kVA' },'N/A','88.0%'),
+
+    // ═══════════════════════════════════════════════════════
+    // ECOFLOW — 2 models (STREAM 800 EU + STREAM Ultra NA)
+    // Source: https://www.ecoflow.com/stream-balcony-solar-system
+    // ═══════════════════════════════════════════════════════
+    P('166','EcoFlow STREAM 800','STREAM','STREAM-800',800,1000,230,2,96.5,10,3.5,'280 x 220 x 40','EcoFlow App','ACTIVE','https://www.ecoflow.com/stream-balcony-solar-system','https://www.ecoflow.com/stream-balcony-solar-system',m(20),ecoflowEU,299,'IN_STOCK','2025-01-01','2025-08-01','Balcony solar microinverter. 800W output, 2 MPPT. Built-in WiFi. IP67. EN 50549-1. Schuko plug-and-play.',0.92,'600-800W','WiFi','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','16 A x2','<3%','50 mW','22 VDC','96.5%','60 VDC','20 A'),
+    P('167','EcoFlow STREAM Ultra','STREAM Ultra','STREAM-Ultra',2400,4000,120,4,97.0,10,45.0,'500 x 380 x 300','EcoFlow App','ACTIVE','https://us.ecoflow.com/stream-ultra-balcony-solar-battery-system','https://us.ecoflow.com/stream-ultra-balcony-solar-battery-system',m(20),ecoflowNA,2499,'IN_STOCK','2025-06-01','2025-08-01','All-in-one MI + 5kWh LiFePO4 battery. 2400W output. 4 MPPT. UL listed. NEMA 4. For NA 120V plug-in solar.',0.91,'1500W+','WiFi+BT','-20°C to +55°C','NEMA 4','16-60 VDC','16-50 VDC','16 A x4','<3%','N/A','22 VDC','97.0%','60 VDC','20 A',{ 'Battery Capacity': '5000 Wh', 'Battery Type': 'LiFePO4' },'N/A','97.0%'),
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -776,6 +839,36 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
     '96':  { cec: '97.5%', euro: 'N/A', max: '97.5%' },    // Tesla SI 3.8
     '97':  { cec: '97.5%', euro: 'N/A', max: '97.5%' },    // Tesla SI 7.6
     '138': { cec: '97.5%', euro: 'N/A', max: '97.5%' },    // Powerwall 3
+
+    // ── HOYMILES HiFlow Pro LV (NA-only, 120V) ──
+    // Source: Hoymiles HiFlow Pro LV datasheet — CEC weighted only (NA market)
+    '154': { cec: '95.0%', euro: 'N/A', max: '95.5%' },    // HMS-360-1WM-LV
+    '155': { cec: '95.0%', euro: 'N/A', max: '95.5%' },    // HMS-391-1WM-LV
+    '156': { cec: '95.0%', euro: 'N/A', max: '95.5%' },    // HMS-420-1WM-LV
+    '157': { cec: '95.0%', euro: 'N/A', max: '95.5%' },    // HMS-450-1WM-LV
+    '158': { cec: '95.0%', euro: 'N/A', max: '95.5%' },    // HMS-500-1WM-LV
+    // HiFlow 2-in-1 missing EU models
+    '159': { cec: 'N/A', euro: '96.5%', max: '96.7%' },    // HiFlow HMS-700-2WB
+    '160': { cec: 'N/A', euro: '96.0%', max: '96.5%' },    // HiFlow HMS-900-2WB
+
+    // ── HOYMILES MIS-W Pro ──
+    // Source: Hoymiles MIS-W Pro datasheet — CEC peak 97.5%, global distribution
+    '161': { cec: '97.0%', euro: '97.0%', max: '97.5%' },  // MIS-2250-W Pro
+    '162': { cec: '97.0%', euro: '97.0%', max: '97.5%' },  // MIS-2500-W Pro
+    '163': { cec: '97.0%', euro: '97.0%', max: '97.5%' },  // MIS-2750-W Pro
+
+    // ── ANKER ──
+    // Source: Anker SOLIX Solarbank 4 E5000 Pro datasheet
+    '164': { cec: 'N/A', euro: '95.5%', max: '96.0%' },    // Solarbank 4 E5000 Pro (EU-only)
+
+    // ── MARSTEK ──
+    // Source: Marstek Venus B datasheet — battery-side to AC-side max 88%
+    '165': { cec: 'N/A', euro: 'N/A', max: '88.0%' },      // Venus B (battery ESS, not traditional inverter eff)
+
+    // ── ECOFLOW ──
+    // Source: EcoFlow STREAM datasheets
+    '166': { cec: 'N/A', euro: '96.0%', max: '96.5%' },    // STREAM 800 (EU-only)
+    '167': { cec: '96.5%', euro: 'N/A', max: '97.0%' },    // STREAM Ultra (NA-only)
   };
 
   // Apply efficiency corrections to products
