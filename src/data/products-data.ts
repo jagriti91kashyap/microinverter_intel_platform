@@ -205,7 +205,7 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
   const m = (idx: number) => manufacturers[idx];
   // Enphase = 0, APsystems = 1, Hoymiles = 2, Deye = 3, Sigenergy = 4, Envertech = 5,
   // Chilicon = 6, SMA = 7, Fronius = 8, SolarEdge = 9, Tigo = 10, TSUN = 11, AEconversion = 12, Atmoce = 13,
-  // Q CELLS = 14, Huawei = 15, FoxESS = 16, Tesla = 17, Anker = 18, Marstek = 19, EcoFlow = 20
+  // Q CELLS = 14, Huawei = 15, FoxESS = 16, Tesla = 17, Anker = 18, Marstek = 19, EcoFlow = 20, Octopus Energy = 22, Sungrow = 23, Anker = 18, Marstek = 19, EcoFlow = 20
 
   // Country groups based on VERIFIED regional store data (enphase.com US/DE/AU/IN/JP stores, Jul 2025)
   // Enphase has different product lineups per region — do NOT use a single global list
@@ -246,6 +246,8 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
   const marstekEU = [...EU];  // Marstek Venus: EU markets, 230V
   const ecoflowEU = [...EU];  // EcoFlow STREAM: EU markets, 230V
   const ecoflowNA = [...NA];  // EcoFlow STREAM Ultra: US (Utah), 120V
+  const octopusNA = [...NA];  // Octopus Energy Nook: North America focus
+  const sungrowNA = [...NA];  // Sungrow: North America focus
 
   const products: Product[] = [
     // ═══════════════════════════════════════════════════════
@@ -583,6 +585,30 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
     // ═══════════════════════════════════════════════════════
     P('166','EcoFlow STREAM 800','STREAM','STREAM-800',800,1000,230,2,96.5,10,3.5,'280 x 220 x 40','EcoFlow App','ACTIVE','https://www.ecoflow.com/stream-balcony-solar-system','https://www.ecoflow.com/stream-balcony-solar-system',m(20),ecoflowEU,299,'IN_STOCK','2025-01-01','2025-08-01','Balcony solar microinverter. 800W output, 2 MPPT. Built-in WiFi. IP67. EN 50549-1. Schuko plug-and-play.',0.92,'600-800W','WiFi','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','16 A x2','<3%','50 mW','22 VDC','96.5%','60 VDC','20 A'),
     P('167','EcoFlow STREAM Ultra','STREAM Ultra','STREAM-Ultra',2400,4000,120,4,97.0,10,45.0,'500 x 380 x 300','EcoFlow App','ACTIVE','https://us.ecoflow.com/stream-ultra-balcony-solar-battery-system','https://us.ecoflow.com/stream-ultra-balcony-solar-battery-system',m(20),ecoflowNA,2499,'IN_STOCK','2025-06-01','2025-08-01','All-in-one MI + 5kWh LiFePO4 battery. 2400W output. 4 MPPT. UL listed. NEMA 4. For NA 120V plug-in solar.',0.91,'1500W+','WiFi+BT','-20°C to +55°C','NEMA 4','16-60 VDC','16-50 VDC','16 A x4','<3%','N/A','22 VDC','97.0%','60 VDC','20 A',{ 'Battery Capacity': '5000 Wh', 'Battery Type': 'LiFePO4' },'N/A','97.0%'),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HOYMILES HMS-4WB & MIS-W Pro (New 2026)
+    // ═══════════════════════════════════════════════════════════════════════════
+    P('168','Hoymiles HMS-1600-4WB','HMS','HMS-1600-4WB',1600,1800,230,4,96.7,12,5.6,'331 x 218 x 40.6','S-Miles Cloud','ACTIVE','https://b2b.offgridtec.com/media/product_attachements/Hoymiles_HMS_4WB_Datasheet.pdf','https://hoymiles.com/products/microinverter/',m(2),hoy230V,249,'IN_STOCK','2026-01-10','2026-01-10','HMS-1600-4WB: 4-in-1 1600W rooftop MI. Built-in WiFi+BT. No DTU required. Sub-1G RF. VDE 4105 certified.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','14 A/ch','<3%','50 mW','22 VDC','96.7%','60 VDC','14 A',{},'N/A','N/A'),
+    P('169','Hoymiles HMS-1800-4WB','HMS','HMS-1800-4WB',1800,2000,230,4,96.5,12,5.6,'331 x 218 x 40.6','S-Miles Cloud','ACTIVE','https://b2b.offgridtec.com/media/product_attachements/Hoymiles_HMS_4WB_Datasheet.pdf','https://hoymiles.com/products/microinverter/',m(2),hoy230V,269,'IN_STOCK','2026-01-10','2026-01-10','HMS-1800-4WB: 4-in-1 1800W rooftop MI. WiFi+BT. Quad MPPT. EN 50549-1 certified.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','15 A/ch','<3%','50 mW','22 VDC','96.5%','60 VDC','15 A',{},'N/A','N/A'),
+    P('170','Hoymiles HMS-2000-4WB','HMS','HMS-2000-4WB',2000,2200,230,4,96.5,12,5.6,'331 x 218 x 40.6','S-Miles Cloud','ACTIVE','https://b2b.offgridtec.com/media/product_attachements/Hoymiles_HMS_4WB_Datasheet.pdf','https://hoymiles.com/products/microinverter/',m(2),hoy230V,289,'IN_STOCK','2026-01-10','2026-01-10','HMS-2000-4WB: 4-in-1 2000W flagship. WiFi+BT. Schuko plug. GDPR/RED compliant.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','16 A/ch','<3%','50 mW','22 VDC','96.5%','65 VDC','25 A',{},'N/A','N/A'),
+    P('171','Hoymiles MIS-2250-W Pro','MIS-W Pro','MIS-2250-W-Pro',2250,2500,230,4,96.5,12,6.2,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://hoymiles.com/products/microinverter/','https://hoymiles.com/products/microinverter/',m(2),hoy230V,349,'IN_STOCK','2026-01-20','2026-01-20','MIS-2250-W Pro: 4-in-1 2250W commercial MI. WiFi+BT. For C&I rooftop. Sub-1G RF.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','16 A/ch','<3%','75 mW','22 VDC','96.5%','60 VDC','16 A'),
+    P('172','Hoymiles MIS-2500-W Pro','MIS-W Pro','MIS-2500-W-Pro',2500,2800,230,4,96.5,12,6.2,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://hoymiles.com/products/microinverter/','https://hoymiles.com/products/microinverter/',m(2),hoy230V,379,'IN_STOCK','2026-01-20','2026-01-20','MIS-2500-W Pro: 4-in-1 2500W commercial MI. WiFi+BT. Balanced 3-phase output.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','17 A/ch','<3%','75 mW','22 VDC','96.5%','60 VDC','17 A'),
+    P('173','Hoymiles MIS-2750-W Pro','MIS-W Pro','MIS-2750-W-Pro',2750,3000,230,4,96.5,12,6.2,'350 x 240 x 45','S-Miles Cloud','ACTIVE','https://hoymiles.com/products/microinverter/','https://hoymiles.com/products/microinverter/',m(2),hoy230V,409,'IN_STOCK','2026-01-20','2026-01-20','MIS-2750-W Pro: 4-in-1 2750W flagship commercial MI. WiFi+BT. Highest MIS-W Pro output.',0.93,'1500W+','WiFi+BT','-40°C to +65°C','IP67','16-60 VDC','16-60 VDC','18 A/ch','<3%','75 mW','22 VDC','96.5%','60 VDC','18 A'),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // OCTOPUS ENERGY NOOK (New 2026)
+    // ═══════════════════════════════════════════════════════════════════════════
+    P('174','Octopus Energy Nook Cube','Nook','Nook-Cube-2K',2000,5000,240,1,95.0,10,18.0,'400 x 300 x 150','Octopus App','ACTIVE','https://octopusenergy.com/nook/','https://octopusenergy.com/nook/',m(22),NA,799,'IN_STOCK','2026-03-01','2026-03-01','Octopus Energy Nook Cube: 2kWh plug-in battery. Expandable to 10.5kWh. WiFi. Compact design. 10-year warranty.',0.90,'400-500W','WiFi','-10°C to +40°C','IP54','0-480 VDC','N/A','N/A','N/A','N/A','N/A','95.0%','480 VDC','N/A',{'Capacity': '2000 Wh', 'Expandable': 'Yes', 'Max Capacity': '10.5 kWh'}),
+    P('175','Octopus Energy Nook Colossus','Nook','Nook-Colossus-5K',5000,10000,240,1,95.5,10,35.0,'500 x 400 x 180','Octopus App','ACTIVE','https://octopusenergy.com/nook/','https://octopusenergy.com/nook/',m(22),NA,1499,'IN_STOCK','2026-03-01','2026-03-01','Octopus Energy Nook Colossus: 5kWh wall-mounted battery. Expandable to 30kWh. WiFi. 10-year warranty.',0.90,'1500W+','WiFi','-10°C to +40°C','IP54','0-480 VDC','N/A','N/A','N/A','N/A','N/A','95.5%','480 VDC','N/A',{'Capacity': '5000 Wh', 'Type': 'Wall-Mounted', 'Expandable': 'Yes', 'Max Capacity': '30 kWh'}),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SUNGROW STRING INVERTERS (New 2026)
+    // ═══════════════════════════════════════════════════════════════════════════
+    P('176','Sungrow SG125CX-P3','SG125CX','SG125CX-P3',125000,150000,480,3,98.5,10,850.0,'2000 x 1200 x 600','iSolarCloud','ACTIVE','https://www.sungrowpower.com/en/products/string-inverter/sg125cx-p3','https://www.sungrowpower.com/en/products/string-inverter/sg125cx-p3',m(23),NA,45000,'IN_STOCK','2025-06-01','2026-01-15','Sungrow SG125CX-P3: 125kW 3-phase string inverter. For utility-scale/C&I. 3 MPPTs. WiFi+Ethernet. 10-year warranty.',0.91,'1500W+','WiFi+ETH','-25°C to +60°C','IP65','200-1000 VDC','200-1000 VDC','N/A','<3%','N/A','200 VDC','98.5%','1000 VDC','N/A',{'Power': '125 kW', 'Phase': '3-Phase', 'Type': 'String Inverter'}),
+    P('177','Sungrow SG465HX','SG465HX','SG465HX',46500,60000,480,2,98.3,10,450.0,'1400 x 900 x 400','iSolarCloud','ACTIVE','https://www.sungrowpower.com/en/products/string-inverter/sg465hx','https://www.sungrowpower.com/en/products/string-inverter/sg465hx',m(23),NA,18000,'IN_STOCK','2025-08-01','2026-01-15','Sungrow SG465HX: 46.5kW 3-phase string inverter. Dual MPPT. WiFi+Ethernet+4G. For residential/C&I rooftop.',0.92,'1500W+','WiFi+ETH+4G','-25°C to +60°C','IP65','200-1000 VDC','200-1000 VDC','N/A','<3%','N/A','200 VDC','98.3%','1000 VDC','N/A',{'Power': '46.5 kW', 'Phase': '3-Phase'}),
+    P('178','Sungrow SH125CX','SH125CX','SH125CX',125000,150000,480,3,98.5,10,850.0,'2000 x 1200 x 600','iSolarCloud','ACTIVE','https://www.sungrowpower.com/en/products/hybrid-inverter/sh125cx','https://www.sungrowpower.com/en/products/hybrid-inverter/sh125cx',m(23),NA,52000,'IN_STOCK','2025-09-01','2026-01-15','Sungrow SH125CX: 125kW 3-phase hybrid inverter. Integrated battery support. 3 MPPTs. WiFi+Ethernet. 10-year warranty.',0.91,'1500W+','WiFi+ETH','-25°C to +60°C','IP65','200-1000 VDC','200-1000 VDC','N/A','<3%','N/A','200 VDC','98.5%','1000 VDC','N/A',{'Power': '125 kW', 'Type': 'Hybrid', 'Battery Support': 'Yes'}),
+    P('179','Sungrow PowerStack ST255CS','PowerStack','ST255CS',255000,300000,480,4,98.6,10,1200.0,'2400 x 1400 x 700','iSolarCloud','ACTIVE','https://www.sungrowpower.com/en/products/energy-storage/powerstack-st255cs','https://www.sungrowpower.com/en/products/energy-storage/powerstack-st255cs',m(23),NA,95000,'IN_STOCK','2025-10-01','2026-01-15','Sungrow PowerStack ST255CS: 255kW integrated energy storage system. 4 MPPTs. Modular design. WiFi+Ethernet+4G. 10-year warranty.',0.90,'1500W+','WiFi+ETH+4G','-25°C to +60°C','IP65','200-1000 VDC','200-1000 VDC','N/A','<3%','N/A','200 VDC','98.6%','1000 VDC','N/A',{'Power': '255 kW', 'Type': 'Energy Storage System', 'Modular': 'Yes'}),
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -869,6 +895,24 @@ export function buildProducts(manufacturers: Manufacturer[]): Product[] {
     // Source: EcoFlow STREAM datasheets
     '166': { cec: 'N/A', euro: '96.0%', max: '96.5%' },    // STREAM 800 (EU-only)
     '167': { cec: '96.5%', euro: 'N/A', max: '97.0%' },    // STREAM Ultra (NA-only)
+
+    // ── HOYMILES HMS-4WB & MIS-W Pro (New 2026) ──
+    '168': { cec: 'N/A', euro: '96.7%', max: '96.7%' },    // HMS-1600-4WB
+    '169': { cec: 'N/A', euro: '96.5%', max: '96.5%' },    // HMS-1800-4WB
+    '170': { cec: 'N/A', euro: '96.5%', max: '96.5%' },    // HMS-2000-4WB
+    '171': { cec: 'N/A', euro: '96.5%', max: '96.5%' },    // MIS-2250-W Pro
+    '172': { cec: 'N/A', euro: '96.5%', max: '96.5%' },    // MIS-2500-W Pro
+    '173': { cec: 'N/A', euro: '96.5%', max: '96.5%' },    // MIS-2750-W Pro
+
+    // ── OCTOPUS ENERGY NOOK (New 2026) ──
+    '174': { cec: 'N/A', euro: 'N/A', max: '95.0%' },      // Nook Cube
+    '175': { cec: 'N/A', euro: 'N/A', max: '95.5%' },      // Nook Colossus
+
+    // ── SUNGROW STRING INVERTERS (New 2026) ──
+    '176': { cec: '98.5%', euro: 'N/A', max: '98.5%' },    // SG125CX-P3
+    '177': { cec: '98.3%', euro: 'N/A', max: '98.3%' },    // SG465HX
+    '178': { cec: '98.5%', euro: 'N/A', max: '98.5%' },    // SH125CX
+    '179': { cec: '98.6%', euro: 'N/A', max: '98.6%' },    // PowerStack ST255CS
   };
 
   // Apply efficiency corrections to products

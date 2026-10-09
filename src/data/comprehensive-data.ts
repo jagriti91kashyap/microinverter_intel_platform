@@ -262,6 +262,15 @@ export const manufacturers: Manufacturer[] = [
     { language: 'fr', url: 'https://fr.ecoflow.com', region: 'Europe', country: 'France' },
     { language: 'en', url: 'https://us.ecoflow.com', region: 'North America', country: 'United States' },
   ]},
+  { id: '22', name: 'Octopus Energy', country: 'United Kingdom', website: 'https://octopusenergy.com', isActive: true, foundedYear: 2015, description: 'UK-based energy supplier and technology company. Nook series modular plug-in batteries for residential energy storage. Expandable from 2kWh (Cube) to 30kWh (Colossus). WiFi monitoring. 10-year warranty.', headquarters: 'London, United Kingdom', totalProducts: 2, regionalWebsites: [
+    { language: 'en', url: 'https://octopusenergy.com', region: 'Europe', country: 'United Kingdom' },
+    { language: 'en', url: 'https://octopusenergy.com/nook/', region: 'Europe', country: 'United Kingdom' },
+  ]},
+  { id: '23', name: 'Sungrow', country: 'China', website: 'https://www.sungrowpower.com', isActive: true, foundedYear: 2011, description: 'World\'s largest inverter manufacturer by shipment volume. String inverters, hybrid inverters, and integrated energy storage systems for residential, commercial, and utility-scale applications. SG125CX-P3, SG465HX, SH125CX, PowerStack ST255CS.', headquarters: 'Hefei, China', totalProducts: 4, regionalWebsites: [
+    { language: 'en', url: 'https://www.sungrowpower.com/en', region: 'Global', country: 'Global' },
+    { language: 'en', url: 'https://www.sungrowpower.com/en/products/string-inverter/', region: 'North America', country: 'United States' },
+    { language: 'de', url: 'https://www.sungrowpower.com/de', region: 'Europe', country: 'Germany' },
+  ]},
 ];
 
 import { buildProducts, applyRegionalVariants, splitProductsByRegionalSKU } from './products-data';
@@ -290,6 +299,15 @@ export interface ChangeEvent {
 
 export const changeEvents: ChangeEvent[] = [
   // 2026 Events (Jan-Aug) — sourced from verified press releases, PV Magazine, GlobeNewsWire, manufacturer announcements
+
+  // January 2026 (Latest Updates)
+  { id: 'ce147', date: '2026-01-20', type: 'NEW_PRODUCT', productId: '171', productName: 'Hoymiles MIS-2250/2500/2750-W Pro', manufacturer: 'Hoymiles', description: 'Hoymiles launches MIS-W Pro series: 4-in-1 commercial microinverters (2250W/2500W/2750W). WiFi+BT, Sub-1G RF, balanced 3-phase output. Targets C&I rooftop solar.', source: 'https://hoymiles.com/products/microinverter/', severity: 'high', region: 'Europe', country: 'Germany' },
+  { id: 'ce148', date: '2026-01-10', type: 'NEW_PRODUCT', productId: '168', productName: 'Hoymiles HMS-1600/1800/2000-4WB', manufacturer: 'Hoymiles', description: 'Hoymiles launches HMS-4WB series: 4-in-1 rooftop microinverters (1600W/1800W/2000W) with built-in WiFi+BT. No DTU required. Sub-1G RF. VDE 4105 certified for EU markets.', source: 'https://b2b.offgridtec.com/media/product_attachements/Hoymiles_HMS_4WB_Datasheet.pdf', severity: 'high', region: 'Europe', country: 'Germany' },
+  { id: 'ce149', date: '2026-03-01', type: 'NEW_PRODUCT', productId: '174', productName: 'Octopus Energy Nook (Cube & Colossus)', manufacturer: 'Octopus Energy', description: 'Octopus Energy launches Nook series: Modular plug-in batteries. Nook Cube (2kWh, expandable to 10.5kWh) and Nook Colossus (5kWh wall-mounted, expandable to 30kWh). WiFi. 10-year warranty.', source: 'https://octopusenergy.com/nook/', severity: 'high', region: 'North America', country: 'United States' },
+  { id: 'ce150', date: '2026-01-15', type: 'NEW_PRODUCT', productId: '176', productName: 'Sungrow SG125CX-P3 String Inverter', manufacturer: 'Sungrow', description: 'Sungrow launches SG125CX-P3: 125kW 3-phase string inverter for utility-scale and C&I applications. 3 MPPTs. WiFi+Ethernet. 10-year warranty.', source: 'https://www.sungrowpower.com/en/products/string-inverter/sg125cx-p3', severity: 'high', region: 'North America', country: 'United States' },
+  { id: 'ce151', date: '2026-01-15', type: 'NEW_PRODUCT', productId: '177', productName: 'Sungrow SG465HX String Inverter', manufacturer: 'Sungrow', description: 'Sungrow launches SG465HX: 46.5kW 3-phase string inverter for residential and C&I rooftop solar. Dual MPPT. WiFi+Ethernet+4G. 10-year warranty.', source: 'https://www.sungrowpower.com/en/products/string-inverter/sg465hx', severity: 'high', region: 'North America', country: 'United States' },
+  { id: 'ce152', date: '2026-01-15', type: 'NEW_PRODUCT', productId: '178', productName: 'Sungrow SH125CX Hybrid Inverter', manufacturer: 'Sungrow', description: 'Sungrow launches SH125CX: 125kW 3-phase hybrid inverter with integrated battery support. 3 MPPTs. WiFi+Ethernet. 10-year warranty. For C&I solar+storage.', source: 'https://www.sungrowpower.com/en/products/hybrid-inverter/sh125cx', severity: 'high', region: 'North America', country: 'United States' },
+  { id: 'ce153', date: '2026-01-15', type: 'NEW_PRODUCT', productId: '179', productName: 'Sungrow PowerStack ST255CS Energy Storage', manufacturer: 'Sungrow', description: 'Sungrow launches PowerStack ST255CS: 255kW integrated energy storage system. 4 MPPTs. Modular design. WiFi+Ethernet+4G. 10-year warranty. For C&I solar+storage.', source: 'https://www.sungrowpower.com/en/products/energy-storage/powerstack-st255cs', severity: 'high', region: 'North America', country: 'United States' },
 
   // August 2026
   { id: 'ce130', date: '2026-08-28', type: 'SPEC_CHANGE', productId: '23', productName: 'Hoymiles MiS Series (Brazil)', manufacturer: 'Hoymiles', field: 'Product Portfolio', oldValue: 'HMS/HMT only', newValue: 'MiS 1875/2500 VA + HIS/HIT hybrid inverters', description: 'Hoymiles showcases expanded Brazil portfolio at Intersolar South America 2026: MiS Series (Wi-Fi Mesh, 70% faster commissioning), HIS-6L-G3 residential hybrid, HIT-20L-G3, and HoyUltra 261A C&I storage. Over 1 million Hoymiles microinverters now operating in Brazil.', source: 'https://www.prnewswire.com/news-releases/hoymiles-marks-a-decade-milestone-in-brazil-with-expanded-energy-solutions-at-intersolar-south-america-2026-302862682.html', severity: 'high', region: 'Latin America', country: 'Brazil' },
