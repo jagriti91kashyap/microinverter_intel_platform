@@ -613,9 +613,7 @@ function ComparePageContent() {
                 )}
               </div>
 
-              <Button variant="outline" size="sm" onClick={exportCSV}><Download className="w-4 h-4 mr-1" />CSV</Button>
               <Button variant="outline" size="sm" onClick={exportExcel}><Download className="w-4 h-4 mr-1" />Excel</Button>
-              <Button variant="outline" size="sm" onClick={exportPDF}><Download className="w-4 h-4 mr-1" />PDF</Button>
               <Button variant="outline" size="sm" onClick={shareLink}><Share2 className="w-4 h-4 mr-1" />Share</Button>
               <Button variant="outline" size="sm" onClick={() => setSelected([])}><X className="w-4 h-4 mr-1" />Clear All</Button>
             </>
@@ -992,22 +990,6 @@ function ComparePageContent() {
                                           <span key={c} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600" title={c}>{toISO(c)}</span>
                                         ))}
                                       </div>
-                                    ) : <span className="text-[12px] text-gray-300">—</span>}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                            {/* Datasheet link */}
-                            <tr>
-                              <td className="px-5 py-2.5 text-[13px] text-gray-500 pl-10 sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border border-gray-300">Datasheet</td>
-                              {selected.map(p => {
-                                const variant = p.regionalVariants?.find(v => v.region === regionCode);
-                                return (
-                                  <td key={p.id} className="px-4 py-2.5 text-center border border-gray-300">
-                                    {variant?.datasheetUrl ? (
-                                      <a href={variant.datasheetUrl} target="_blank" rel="noopener noreferrer" className="text-enphase-500 hover:text-enphase-600 text-[12px] inline-flex items-center gap-1">
-                                        <FileText className="w-3.5 h-3.5" />{regionCode} PDF
-                                      </a>
                                     ) : <span className="text-[12px] text-gray-300">—</span>}
                                   </td>
                                 );

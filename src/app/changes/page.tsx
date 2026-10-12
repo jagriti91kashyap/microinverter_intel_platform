@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,13 +60,25 @@ const toSourceUrl = (source: string) => {
 
 const typeLabel = (t: string) => t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Datasheet Revision', 'Datasheet Rev.');
 
-export default function ChangesPage() {
+function ChangesContent() {
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight') || '';
+
   const [typeFilter, setTypeFilter] = useState('');
   const [mfgFilter, setMfgFilter] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
   const [quarterFilter, setQuarterFilter] = useState('');
   const [regionFilter, setRegionFilter] = useState('');
   const [countryFilter, setCountryFilter] = useState('');
+  const highlightRef = useRef<HTMLTableRowElement>(null);
+  const hasScrolled = useRef(false);
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current && !hasScrolled.current) {
+      hasScrolled.current = true;
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlightId]);
 
   const allRevisions = useMemo(() => {
     return [...changeEvents]
@@ -235,7 +248,11 @@ export default function ChangesPage() {
               {filtered.map((event, i) => {
                 const srcUrl = toSourceUrl(event.source);
                 return (
-                  <tr key={event.id + '-' + i} className="hover:bg-blue-50/40 transition-colors">
+                  <tr
+                    key={event.id + '-' + i}
+                    ref={event.id === highlightId ? highlightRef : undefined}
+                    className={`transition-colors ${event.id === highlightId ? 'bg-enphase-50 ring-2 ring-enphase-300 ring-inset' : 'hover:bg-blue-50/40'}`}
+                  >
                     <td className="px-5 py-3.5 text-[13px] text-gray-500 whitespace-nowrap font-mono border border-gray-300">{formatDate(event.date)}</td>
                     <td className="px-5 py-3.5 border border-gray-300">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[12px] font-medium ${typeBadge[event.type] || 'bg-gray-50 text-gray-600'}`}>
@@ -278,5 +295,13 @@ export default function ChangesPage() {
       )}
       </div>
     </motion.div>
+  );
+}
+
+export default function ChangesPage() {
+  return (
+    <Suspense>
+      <ChangesContent />
+    </Suspense>
   );
 }

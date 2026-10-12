@@ -10,7 +10,11 @@ import {
 import { geoNameToCountry } from '@/lib/country-iso';
 import type { Product } from '@/data/comprehensive-data';
 
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json';
+
+// Countries with overseas territories that cause misleading tooltips (e.g. French Guiana, Greenland).
+// Tooltip/click is suppressed when the cursor is outside the European mainland region of the SVG.
+const OVERSEAS_COUNTRIES = new Set(['France', 'Denmark', 'Netherlands', 'United Kingdom']);
 
 type StatusFilter = 'ALL' | 'ACTIVE' | 'ANNOUNCED' | 'DISCONTINUED';
 
@@ -205,9 +209,25 @@ function ManufacturerMapInner({ products, manufacturerName, compact = false }: M
                       }}
                       onMouseEnter={(evt) => {
                         if (data) {
-                          setHoveredCountry(data);
-                          const rect = (evt.target as SVGElement).closest('svg')?.getBoundingClientRect();
+                          // Suppress tooltip for overseas territories of European countries.
+                          // European mainland is in the right portion of the SVG (roughly x > 45% of width).
+                          const svg = (evt.target as SVGElement).closest('svg');
+                          const rect = svg?.getBoundingClientRect();
                           if (rect) {
+                            const relX = (evt.clientX - rect.left) / rect.width;
+                            const relY = (evt.clientY - rect.top) / rect.height;
+                            const geoName = geo.properties?.name || '';
+                            const resolvedName = geoNameToCountry[geoName];
+                            if (OVERSEAS_COUNTRIES.has(geoName) || OVERSEAS_COUNTRIES.has(resolvedName || '')) {
+                              // Mainland Europe: roughly relX > 0.45 and relY < 0.55
+                              // Greenland (Denmark): relX 0.3-0.45, relY < 0.15 — suppress
+                              const isMainlandEurope = relX > 0.45 && relY > 0.1 && relY < 0.55;
+                              if (!isMainlandEurope) {
+                                setHoveredCountry(null);
+                                return;
+                              }
+                            }
+                            setHoveredCountry(data);
                             setTooltipPos({
                               x: evt.clientX - rect.left,
                               y: evt.clientY - rect.top,
@@ -216,8 +236,20 @@ function ManufacturerMapInner({ products, manufacturerName, compact = false }: M
                         }
                       }}
                       onMouseMove={(evt) => {
-                        const rect = (evt.target as SVGElement).closest('svg')?.getBoundingClientRect();
+                        const svg = (evt.target as SVGElement).closest('svg');
+                        const rect = svg?.getBoundingClientRect();
                         if (rect) {
+                          const relX = (evt.clientX - rect.left) / rect.width;
+                          const relY = (evt.clientY - rect.top) / rect.height;
+                          const geoName = geo.properties?.name || '';
+                          const resolvedName = geoNameToCountry[geoName];
+                          if (OVERSEAS_COUNTRIES.has(geoName) || OVERSEAS_COUNTRIES.has(resolvedName || '')) {
+                            const isMainlandEurope = relX > 0.45 && relY > 0.1 && relY < 0.55;
+                            if (!isMainlandEurope) {
+                              setHoveredCountry(null);
+                              return;
+                            }
+                          }
                           setTooltipPos({
                             x: evt.clientX - rect.left,
                             y: evt.clientY - rect.top,
@@ -225,8 +257,23 @@ function ManufacturerMapInner({ products, manufacturerName, compact = false }: M
                         }
                       }}
                       onMouseLeave={() => setHoveredCountry(null)}
-                      onClick={() => {
-                        if (data) setSelectedCountry(data);
+                      onClick={(evt) => {
+                        if (data) {
+                          // Also suppress click on overseas territories
+                          const svg = (evt.target as SVGElement).closest('svg');
+                          const rect = svg?.getBoundingClientRect();
+                          if (rect) {
+                            const relX = (evt.clientX - rect.left) / rect.width;
+                            const relY = (evt.clientY - rect.top) / rect.height;
+                            const geoName = geo.properties?.name || '';
+                            const resolvedName = geoNameToCountry[geoName];
+                            if (OVERSEAS_COUNTRIES.has(geoName) || OVERSEAS_COUNTRIES.has(resolvedName || '')) {
+                              const isMainlandEurope = relX > 0.45 && relY > 0.1 && relY < 0.55;
+                              if (!isMainlandEurope) return;
+                            }
+                          }
+                          setSelectedCountry(data);
+                        }
                       }}
                     />
                   );

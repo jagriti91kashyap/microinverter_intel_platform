@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
   Search, 
-  Settings, 
   BarChart3,
   AlertTriangle,
   Bot,
@@ -18,9 +17,8 @@ const navigation = [
   { name: 'Product Library', href: '/search', icon: Search, category: 'main' },
   { name: 'Product Compare', href: '/compare', icon: Scale, category: 'main' },
   { name: 'Latest News', href: '/changes', icon: AlertTriangle, category: 'main' },
-  { name: 'Manufacturers', href: '/manufacturers', icon: Building2, category: 'main' },
   { name: 'AI Pipeline', href: '/pipeline', icon: Bot, category: 'secondary' },
-  { name: 'Settings', href: '/settings', icon: Settings, category: 'secondary' },
+  { name: 'Manufacturers', href: '/manufacturers', icon: Building2, category: 'secondary' },
 ];
 
 interface SidebarProps {

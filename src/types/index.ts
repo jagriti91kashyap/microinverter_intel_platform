@@ -203,6 +203,7 @@ export interface SearchResult {
 export interface DashboardKPI {
   totalProducts: number;
   totalManufacturers: number;
+  countriesTracked: number;
   recentUpdates: number;
   activeJobs: number;
   productsByManufacturer: { manufacturer: string; count: number }[];
@@ -210,6 +211,7 @@ export interface DashboardKPI {
   productsByPowerClass: { class: string; count: number }[];
   recentLaunches: Product[];
   recentlyUpdated: Product[];
+  topManufacturerCountries?: { manufacturer: string; countriesTracked: number }[];
 }
 
 export interface AIExtractionResult {

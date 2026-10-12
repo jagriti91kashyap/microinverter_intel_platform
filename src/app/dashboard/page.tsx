@@ -1,19 +1,24 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Package, Zap, Globe, Activity, 
-  Clock, FileText, Cpu, AlertTriangle, ChevronDown, ChevronUp
+  Package, Zap, Activity, Globe,
+  Clock, FileText, ExternalLink,
+  TrendingUp, ShieldAlert, Lightbulb, Target, ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import Link from 'next/link';
-import { products, manufacturers, changeEvents } from '@/data/comprehensive-data';
+import { products, baseProducts, manufacturers, changeEvents } from '@/data/comprehensive-data';
+
 export default function Dashboard() {
 
   // Core counts
   const totalProducts = products.length;
-  const totalCountries = [...new Set(products.flatMap(p => p.countries))].length;
-  const enphaseActiveCount = products.filter(p => p.manufacturer.name === 'Enphase Energy' && p.status === 'ACTIVE').length;
+  const totalCountries = [...new Set(baseProducts.flatMap(p => p.countries))].length;
+  const enphaseProducts = products.filter(p => p.manufacturer.name === 'Enphase Energy');
+  const enphaseActiveCount = enphaseProducts.filter(p => p.status === 'ACTIVE').length;
+  const competitorProducts = products.filter(p => p.manufacturer.name !== 'Enphase Energy');
 
   // ── All intelligence sourced from changeEvents (the real activity feed) ──
   const sortedEvents = useMemo(() =>
@@ -48,54 +53,13 @@ export default function Dashboard() {
     (e.country === 'United States' || e.region === 'North America')
   );
 
-  // Derive product type from event product name/description
-  const getProductType = (e: typeof changeEvents[0]): string => {
-    const name = (e.productName + ' ' + e.description).toLowerCase();
-    if (name.includes('battery') || name.includes('storage') || name.includes('ess') || name.includes('powerwall')) return 'Storage & Batteries';
-    if (name.includes('optimizer') || name.includes('ts4') || name.includes('power optimizer')) return 'Power Optimizers';
-    if (name.includes('hybrid') || name.includes('gen24') || name.includes('sunny boy') || name.includes('sun2000') || name.includes('h3') || name.includes('h1-')) return 'Hybrid Inverters';
-    if (name.includes('string inverter') || name.includes('grid-tied inverter') || name.includes('t-g3') || name.includes('t3.0') || name.includes('se3000') || name.includes('hd-wave')) return 'String Inverters';
-    if (name.includes('ac module') || name.includes('q.peak')) return 'AC Modules';
-    if (name.includes('meter') || name.includes('gateway') || name.includes('apmeter')) return 'Accessories';
-    return 'Microinverters';
-  };
-
-  // Market news split by product type and region
-  const recentCompetitorNews = useMemo(() =>
-    sortedEvents.filter(e => e.manufacturer !== 'Enphase Energy').slice(0, 20),
-  [sortedEvents]);
-
-  const newsByProductType = useMemo(() => {
-    const grouped: Record<string, typeof changeEvents> = {};
-    recentCompetitorNews.forEach(e => {
-      const type = getProductType(e);
-      if (!grouped[type]) grouped[type] = [];
-      if (grouped[type].length < 2) grouped[type].push(e);
-    });
-    return grouped;
-  }, [recentCompetitorNews]);
-
-  const newsByRegion = useMemo(() => {
-    const regionOrder = ['North America', 'Europe', 'Asia Pacific', 'Global'];
-    const grouped: Record<string, typeof changeEvents> = {};
-    recentCompetitorNews.forEach(e => {
-      const region = e.region && regionOrder.includes(e.region) ? e.region : 'Global';
-      if (!grouped[region]) grouped[region] = [];
-      if (grouped[region].length < 2) grouped[region].push(e);
-    });
-    // Return in defined order
-    const ordered: Record<string, typeof changeEvents> = {};
-    regionOrder.forEach(r => { if (grouped[r]) ordered[r] = grouped[r]; });
-    return ordered;
-  }, [recentCompetitorNews]);
-
   // Recent launch events for bottom list
   const recentLaunchEvents = useMemo(() =>
     sortedEvents.filter(e => e.type === 'NEW_PRODUCT').slice(0, 5),
   [sortedEvents]);
 
   // Recent non-launch events for bottom list
-  const recentChangeEvents = useMemo(() =>
+  const recentChangeEvents_list = useMemo(() =>
     sortedEvents.filter(e => e.type !== 'NEW_PRODUCT').slice(0, 5),
   [sortedEvents]);
 
@@ -106,30 +70,190 @@ export default function Dashboard() {
 
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  // Track expanded news card descriptions
-  const [expandedNews, setExpandedNews] = useState<Set<string>>(new Set());
-  const toggleNewsExpand = (id: string) => {
-    setExpandedNews(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
 
-  // Insight banner data
-  const insightBannerText = useMemo(() => {
-    const parts: string[] = [];
+  // ═══════════════════════════════════════════════════════════════
+  // EXECUTIVE SUMMARY — computed insights for dossier-style cards
+  // ═══════════════════════════════════════════════════════════════
+
+  const executiveSummary = useMemo(() => {
+    // Per-module power: derive actual number of panel inputs from product data.
+    // Uses multiple heuristics: name suffix (-2T/-4T/-8T), description (X-in-1),
+    // maxInputCurrent multiplier (x4, /ch), and MPPT count as fallback.
+    const moduleInputs = (p: typeof products[0]): number => {
+      // 1) Name suffix: -1T, -2T, -4T, -6T, -8T (Hoymiles/APsystems convention)
+      const tMatch = p.model.match(/(\d+)T$/i) || p.name.match(/(\d+)T\b/);
+      if (tMatch) return parseInt(tMatch[1], 10);
+      // 2) Description: "4-in-1", "8-in-1", "4-module", "8-module" etc.
+      const descNinOne = p.aiSummary?.match(/(\d+)-in-1/i) || p.aiSummary?.match(/(\d+)-module/i);
+      if (descNinOne) return parseInt(descNinOne[1], 10);
+      // 3) maxInputCurrent: "20 A x4" → 4 channels, "14 A/ch" → use mppt
+      const cur = p.maxInputCurrent || '';
+      const xMatch = cur.match(/x(\d+)/);
+      if (xMatch) return parseInt(xMatch[1], 10);
+      if (cur.match(/\/ch/i)) return Math.max(p.mppt, 2);
+      // 4) Fallback: mppt count (correct for single-MPPT products)
+      return Math.max(p.mppt, 1);
+    };
+    const perModule = (p: typeof products[0]) => {
+      const inputs = moduleInputs(p);
+      return inputs > 0 ? Math.round(p.acPower / inputs) : p.acPower;
+    };
+
+    // Enphase strengths — microinverters only for benchmark
+    const enphaseMIs = enphaseProducts.filter(p => p.productType === 'Microinverter');
+    const enphaseAvgEff = enphaseMIs.length > 0
+      ? enphaseMIs.reduce((s, p) => s + p.efficiency, 0) / enphaseMIs.length
+      : 0;
+    // Enphase official market reach: 160+ countries (per enphase.com investor communications)
+    // Data tracks ~55 countries explicitly; use official figure for dashboard
+    const enphaseBase = baseProducts.filter(p => p.manufacturer.name === 'Enphase Energy');
+    const enphaseCountries = '160+';
+    const enphaseMaxPower = Math.max(...enphaseMIs.map(p => perModule(p)), 0);
+    const enphaseAvgWarranty = enphaseMIs.length > 0
+      ? enphaseMIs.reduce((s, p) => s + p.warranty, 0) / enphaseMIs.length
+      : 0;
+
+    // Competitor analysis — microinverters only for fair comparison
+    const competitorMIs = competitorProducts.filter(p => p.productType === 'Microinverter');
+    const competitorAvgEff = competitorMIs.length > 0
+      ? competitorMIs.reduce((s, p) => s + p.efficiency, 0) / competitorMIs.length
+      : 0;
+    const competitorMaxPower = Math.max(...competitorMIs.map(p => perModule(p)), 0);
+    const competitorAvgWarranty = competitorMIs.length > 0
+      ? competitorMIs.reduce((s, p) => s + p.warranty, 0) / competitorMIs.length
+      : 0;
+
+    // Top competitors by product count
+    const mfrCounts: Record<string, number> = {};
+    competitorProducts.forEach(p => {
+      mfrCounts[p.manufacturer.name] = (mfrCounts[p.manufacturer.name] || 0) + 1;
+    });
+    const topCompetitors = Object.entries(mfrCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Fastest growing (most events)
+    const eventCounts: Record<string, number> = {};
+    recentEvents.forEach(e => {
+      if (e.manufacturer !== 'Enphase Energy') {
+        eventCounts[e.manufacturer] = (eventCounts[e.manufacturer] || 0) + 1;
+      }
+    });
+    const mostActiveMfr = Object.entries(eventCounts).sort((a, b) => b[1] - a[1])[0];
+
+    // Chinese vs non-Chinese competitor split
+    const chineseMfrs = manufacturers.filter(m => m.country === 'China').map(m => m.name);
+    const chineseProductCount = competitorProducts.filter(p => chineseMfrs.includes(p.manufacturer.name)).length;
+    const chineseShare = competitorProducts.length > 0 ? (chineseProductCount / competitorProducts.length * 100) : 0;
+
+    // Regions where Enphase is NOT present but competitors are
+    const enphaseCountrySet = new Set(enphaseBase.flatMap(p => p.countries));
+    const competitorBase = baseProducts.filter(p => p.manufacturer.name !== 'Enphase Energy');
+    const competitorOnlyCountries = [...new Set(competitorBase.flatMap(p => p.countries))].filter(c => !enphaseCountrySet.has(c));
+
+    return {
+      enphaseAvgEff, enphaseCountries, enphaseMaxPower, enphaseAvgWarranty,
+      competitorAvgEff, competitorMaxPower, competitorAvgWarranty,
+      topCompetitors, mostActiveMfr, chineseShare, chineseProductCount,
+      competitorOnlyCountries, competitorMICount: competitorMIs.length,
+    };
+  }, [enphaseProducts, competitorProducts, recentEvents, manufacturers, baseProducts]);
+
+  // Donut chart data — products by manufacturer (top 6 + Others)
+  const DONUT_COLORS = ['#FF6900', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#94A3B8'];
+  const donutData = useMemo(() => {
+    const mfrCounts: Record<string, number> = {};
+    products.forEach(p => {
+      mfrCounts[p.manufacturer.name] = (mfrCounts[p.manufacturer.name] || 0) + 1;
+    });
+    const sorted = Object.entries(mfrCounts).sort((a, b) => b[1] - a[1]);
+    const top6 = sorted.slice(0, 6).map(([name, value]) => ({ name: name.replace(' Energy', '').replace(' Technologies', ''), value }));
+    const othersCount = sorted.slice(6).reduce((s, [, v]) => s + v, 0);
+    if (othersCount > 0) top6.push({ name: 'Others', value: othersCount });
+    return top6;
+  }, []);
+
+  // Build highlight bullets
+  const highlights = useMemo(() => {
+    const items: { text: string; type: 'positive' | 'neutral' }[] = [];
+    items.push({
+      text: `Enphase leads with ${enphaseActiveCount} active SKUs across ${executiveSummary.enphaseCountries} countries — highest residential microinverter reach globally`,
+      type: 'positive',
+    });
+    if (executiveSummary.enphaseAvgEff > executiveSummary.competitorAvgEff) {
+      items.push({
+        text: `Average efficiency advantage: ${executiveSummary.enphaseAvgEff.toFixed(1)}% vs competitor avg ${executiveSummary.competitorAvgEff.toFixed(1)}%`,
+        type: 'positive',
+      });
+    }
+    if (latestEnphaseLaunch) {
+      items.push({
+        text: `Latest launch: ${latestEnphaseLaunch.productName.split('(')[0].trim()} — ${latestEnphaseLaunch.description.split('.')[0]}`,
+        type: 'positive',
+      });
+    }
+    if (executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty) {
+      items.push({
+        text: `Warranty leadership: ${executiveSummary.enphaseAvgWarranty.toFixed(0)}-year avg vs competitor ${executiveSummary.competitorAvgWarranty.toFixed(0)}-year avg`,
+        type: 'positive',
+      });
+    }
+    return items;
+  }, [executiveSummary, enphaseActiveCount, latestEnphaseLaunch]);
+
+  // Build risk/threat bullets
+  const risks = useMemo(() => {
+    const items: { text: string; severity: 'high' | 'medium' | 'low' }[] = [];
+    if (executiveSummary.competitorMaxPower > executiveSummary.enphaseMaxPower) {
+      items.push({
+        text: `Power gap: Competitor microinverters reach ${executiveSummary.competitorMaxPower}W per module vs Enphase's max ${executiveSummary.enphaseMaxPower}W per module`,
+        severity: 'high',
+      });
+    }
+    if (executiveSummary.chineseShare > 50) {
+      items.push({
+        text: `Chinese manufacturers hold ${executiveSummary.chineseShare.toFixed(0)}% of tracked competitor SKUs (${executiveSummary.chineseProductCount} products) — aggressive pricing pressure`,
+        severity: 'high',
+      });
+    }
+    if (executiveSummary.mostActiveMfr) {
+      items.push({
+        text: `Most active competitor: ${executiveSummary.mostActiveMfr[0]} with ${executiveSummary.mostActiveMfr[1]} events in 30 days`,
+        severity: 'medium',
+      });
+    }
+    if (competitorLaunches.length > 3) {
+      items.push({
+        text: `${competitorLaunches.length} competitor launches in 30 days from ${competitorMfgNames.length} manufacturers — accelerating market velocity`,
+        severity: 'medium',
+      });
+    }
+    if (executiveSummary.competitorOnlyCountries.length > 0) {
+      items.push({
+        text: `${executiveSummary.competitorOnlyCountries.length} markets where competitors are active but Enphase has no presence`,
+        severity: 'low',
+      });
+    }
+    return items;
+  }, [executiveSummary, competitorLaunches, competitorMfgNames]);
+
+  // Strategic recommendations
+  const recommendations = useMemo(() => {
+    const items: string[] = [];
     if (usCompetitorLaunches.length > 0) {
-      parts.push(`${usCompetitorLaunches.length} competitor${usCompetitorLaunches.length !== 1 ? 's' : ''} launched in your core US market this month`);
+      items.push(`Monitor ${usCompetitorLaunches.length} new US competitor product${usCompetitorLaunches.length > 1 ? 's' : ''} for pricing and channel impact`);
+    }
+    if (executiveSummary.competitorMaxPower > executiveSummary.enphaseMaxPower) {
+      items.push(`Evaluate high-power MI roadmap — competitors reaching ${executiveSummary.competitorMaxPower}W per module`);
+    }
+    if (executiveSummary.competitorOnlyCountries.length > 3) {
+      const sample = executiveSummary.competitorOnlyCountries.slice(0, 3).join(', ');
+      items.push(`Assess market entry for ${executiveSummary.competitorOnlyCountries.length} untapped countries (${sample}...)`);
     }
     if (directCompetitorChanges.length > 0) {
-      parts.push(`${directCompetitorChanges.length} spec change${directCompetitorChanges.length !== 1 ? 's' : ''} from direct US competitors`);
+      items.push(`Review ${directCompetitorChanges.length} spec changes from direct US competitors for positioning impact`);
     }
-    if (competitorLaunches.length > 0 && usCompetitorLaunches.length === 0) {
-      parts.push(`${competitorLaunches.length} new competitor product${competitorLaunches.length !== 1 ? 's' : ''} globally in last 30 days`);
-    }
-    return parts;
-  }, [usCompetitorLaunches, directCompetitorChanges, competitorLaunches]);
+    items.push(`Track ${executiveSummary.topCompetitors[0]?.[0] || 'top competitor'} (${executiveSummary.topCompetitors[0]?.[1] || 0} SKUs) — largest product portfolio threat`);
+    return items;
+  }, [executiveSummary, usCompetitorLaunches, directCompetitorChanges]);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="min-h-screen bg-white">
@@ -137,203 +261,284 @@ export default function Dashboard() {
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
         <p className="text-[11px] font-semibold text-enphase-500 tracking-wider mb-3">MICROINVERTER MARKET INTELLIGENCE</p>
         <h1 className="text-[32px] font-semibold text-gray-900 tracking-tight">Dashboard — {currentMonth}</h1>
+        <p className="text-sm text-gray-500 mt-2">Executive summary, competitive intelligence, and strategic takeaways</p>
       </div>
 
       <div className="px-8 py-8 space-y-8 max-w-[1600px]">
 
-      {/* KPI Cards — promoted to top as most decision-relevant content */}
-      <div className="grid gap-4 grid-cols-4">
-        {[
-          { label: 'Products tracked', value: totalProducts, sub: `${manufacturers.length} manufacturers · ${totalCountries} countries`, detail: `${changeEvents.length} events tracked since Jan 2024`, icon: Package, borderColor: '#8B5CF6' },
-          { label: 'Competitor launches (30d)', value: competitorLaunches.length, sub: competitorMfgNames.slice(0, 4).join(' · ') || 'No recent launches', detail: `${usCompetitorLaunches.length} in Enphase's core US market`, icon: Zap, borderColor: '#F59E0B' },
-          { label: 'Enphase active SKUs', value: enphaseActiveCount, sub: `IQ8 · IQ9 · IQ Battery lines`, detail: latestEnphaseLaunch ? `✓ ${latestEnphaseLaunch.productName.split('(')[0].trim()} · ${new Date(latestEnphaseLaunch.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : '', icon: Activity, borderColor: '#10B981' },
-          { label: 'Spec changes (30d)', value: recentSpecChanges.length, sub: `${changeEvents.length} tracked since Jan 2024`, detail: `↑ ${directCompetitorChanges.length} from direct US competitors`, icon: FileText, borderColor: '#EF4444' },
-        ].map((kpi, i) => (
-          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-            <div 
-              className="p-5 bg-white rounded-xl border border-gray-300 hover:shadow-md transition-all"
-              style={{ borderLeft: `4px solid ${kpi.borderColor}` }}
-            >
-              <div className="mb-3">
-                <span className="text-[13px] font-medium text-gray-500">{kpi.label}</span>
-              </div>
-              <div className="text-[36px] font-bold text-gray-900 leading-none mb-3">{kpi.value}</div>
-              <p className="text-sm text-gray-700 mb-2 leading-relaxed">{kpi.sub}</p>
-              <p className="text-[13px] text-gray-600 leading-relaxed">{kpi.detail}</p>
+      {/* ═══ EXECUTIVE DOSSIER ═══ */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="rounded-2xl border-2 border-enphase-200 bg-gradient-to-br from-enphase-50/40 to-white overflow-hidden">
+          <div className="px-6 py-4 bg-enphase-500 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Target className="w-5 h-5 text-white" />
+              <h2 className="text-base font-bold text-white tracking-wide">Executive Intelligence Dossier</h2>
             </div>
-          </motion.div>
-        ))}
-      </div>
+            <span className="text-[11px] font-medium text-enphase-100 bg-enphase-600 px-3 py-1 rounded-full">
+              Updated {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
 
-      {/* Insight Callout Banner */}
-      {insightBannerText.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-          <div className="flex items-start gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-amber-900 mb-1">Competitive Insight</p>
-              <div className="space-y-0.5">
-                {insightBannerText.map((text, i) => (
-                  <p key={i} className="text-[13px] text-amber-800 leading-relaxed">{text}</p>
+          <div className="grid grid-cols-3 divide-x divide-enphase-100">
+            {/* Highlights & Key Wins */}
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                </div>
+                <h3 className="text-sm font-bold text-gray-900">Highlights & Key Wins</h3>
+              </div>
+              <div className="space-y-3">
+                {highlights.map((h, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <ArrowUpRight className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-[13px] text-gray-700 leading-relaxed">{h.text}</p>
+                  </div>
                 ))}
               </div>
             </div>
-            <Link href="/changes" className="text-[13px] text-amber-700 hover:text-amber-900 font-semibold whitespace-nowrap flex-shrink-0 mt-0.5">View details →</Link>
-          </div>
-        </motion.div>
-      )}
 
-      {/* Market News — By Product Type & Region */}
-      <div className="grid gap-5 grid-cols-2">
-        {/* By Product Type */}
-        <div className="p-5 bg-white rounded-xl border border-gray-300 border-l-4 border-l-amber-400">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-amber-500" /> Market News by Product Type
-          </h2>
-          <div className="space-y-3">
-            {Object.entries(newsByProductType).map(([type, events]) => (
-              <div key={type}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{type}</span>
-                  <span className="text-[11px] text-gray-300">·</span>
-                  <span className="text-[11px] text-gray-400">{events.length} update{events.length !== 1 ? 's' : ''}</span>
+            {/* Risk Radar & Threats */}
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+                  <ShieldAlert className="w-4 h-4 text-red-600" />
                 </div>
-                {events.map(e => {
-                  const fullDesc = e.description;
-                  const firstSentence = fullDesc.split('.')[0] + '.';
-                  const hasMore = fullDesc.length > firstSentence.length + 2;
-                  const isExpanded = expandedNews.has(e.id);
-                  return (
-                    <div key={e.id} className="flex items-start gap-2.5 py-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-1.5" />
-                      <div className="min-w-0">
-                        <span className="text-[13px] text-gray-700">{isExpanded ? fullDesc : firstSentence}</span>
-                        {hasMore && (
-                          <button onClick={() => toggleNewsExpand(e.id)} className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium ml-1 inline-flex items-center gap-0.5">
-                            {isExpanded ? <>Less <ChevronUp className="w-3 h-3" /></> : <>Read more <ChevronDown className="w-3 h-3" /></>}
-                          </button>
-                        )}
-                        <span className="text-[12px] text-gray-400 ml-1.5">{new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+                <h3 className="text-sm font-bold text-gray-900">Risk Radar & Threats</h3>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* By Region */}
-        <div className="p-5 bg-white rounded-xl border border-gray-300 border-l-4 border-l-blue-400">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-blue-500" /> Market News by Region
-          </h2>
-          <div className="space-y-3">
-            {Object.entries(newsByRegion).map(([region, events]) => (
-              <div key={region}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{region}</span>
-                  <span className="text-[11px] text-gray-300">·</span>
-                  <span className="text-[11px] text-gray-400">{events.length} update{events.length !== 1 ? 's' : ''}</span>
-                </div>
-                {events.map(e => {
-                  const fullDesc = e.description;
-                  const firstSentence = fullDesc.split('.')[0] + '.';
-                  const hasMore = fullDesc.length > firstSentence.length + 2;
-                  const isExpanded = expandedNews.has(e.id);
-                  return (
-                    <div key={e.id} className="flex items-start gap-2.5 py-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0 mt-1.5" />
-                      <div className="min-w-0">
-                        <span className="text-[13px] text-gray-700">{isExpanded ? fullDesc : firstSentence}</span>
-                        {hasMore && (
-                          <button onClick={() => toggleNewsExpand(e.id)} className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium ml-1 inline-flex items-center gap-0.5">
-                            {isExpanded ? <>Less <ChevronUp className="w-3 h-3" /></> : <>Read more <ChevronDown className="w-3 h-3" /></>}
-                          </button>
-                        )}
-                        <span className="text-[12px] text-gray-400 ml-1.5">{e.manufacturer} · {new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
-                      </div>
+              <div className="space-y-3">
+                {risks.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
+                      r.severity === 'high' ? 'bg-red-500' : r.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-400'
+                    }`} />
+                    <div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider mr-1.5 ${
+                        r.severity === 'high' ? 'text-red-500' : r.severity === 'medium' ? 'text-amber-500' : 'text-blue-400'
+                      }`}>{r.severity}</span>
+                      <span className="text-[13px] text-gray-700 leading-relaxed">{r.text}</span>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-5 grid-cols-2">
-        {/* Competitor Activity — Last 30 Days */}
-        <div className="p-6 bg-white rounded-xl border border-gray-300 border-l-4 border-l-enphase-500">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-enphase-500" /> Competitor Activity — Last 30 Days
-              </h2>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                <span className="font-semibold">{competitorLaunches.length} new products</span> — {usCompetitorLaunches.length} directly in Enphase's US market.
-              </p>
             </div>
-            <Link href="/changes" className="text-[13px] text-enphase-500 hover:text-enphase-600 font-medium whitespace-nowrap">View all →</Link>
-          </div>
-          <div className="space-y-2.5">
-            {recentLaunchEvents.map(e => {
-              const fullDesc = e.description;
-              const firstSentence = fullDesc.split('.')[0] + '.';
-              const hasMore = fullDesc.length > firstSentence.length + 2;
-              const isExpanded = expandedNews.has(`launch-${e.id}`);
-              return (
-                <div key={e.id} className="p-3.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-2 h-2 rounded-full bg-enphase-500 flex-shrink-0" />
-                      <div className="text-sm font-semibold truncate text-gray-900">{e.productName}</div>
-                    </div>
-                    <span className="text-[13px] text-gray-500 font-medium flex-shrink-0 ml-4">{new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
-                  </div>
-                  <div className="ml-5 mt-1">
-                    <span className="text-[13px] text-gray-500">{isExpanded ? fullDesc : firstSentence}</span>
-                    {hasMore && (
-                      <button onClick={() => toggleNewsExpand(`launch-${e.id}`)} className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium ml-1 inline-flex items-center gap-0.5">
-                        {isExpanded ? <>Less <ChevronUp className="w-3 h-3" /></> : <>Read more <ChevronDown className="w-3 h-3" /></>}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Recent Spec & Product Changes */}
-        <div className="p-6 bg-white rounded-xl border border-gray-300 border-l-4 border-l-blue-500">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" /> Spec & Product Changes
-              </h2>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                <span className="font-semibold">{recentSpecChanges.length} changes in last 30 days</span> — {directCompetitorChanges.length} from direct US competitors.
-              </p>
-            </div>
-            <Link href="/changes" className="text-[13px] text-enphase-500 hover:text-enphase-600 font-medium whitespace-nowrap">View all →</Link>
-          </div>
-          <div className="space-y-2.5">
-            {recentChangeEvents.map(e => (
-              <div key={e.id} className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${e.type === 'SPEC_CHANGE' ? 'bg-amber-500' : e.type === 'PRICE_CHANGE' ? 'bg-emerald-500' : e.type === 'DISCONTINUATION' ? 'bg-red-500' : 'bg-gray-400'}`} />
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate text-gray-900">{e.productName}</div>
-                    <div className="text-[13px] text-gray-500 mt-0.5">{e.manufacturer} · {e.type.replace(/_/g, ' ').toLowerCase()}</div>
-                  </div>
+            {/* Strategic Recommendations */}
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Lightbulb className="w-4 h-4 text-amber-600" />
                 </div>
-                <span className="text-[13px] text-gray-500 flex-shrink-0 font-medium ml-4">{new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
+                <h3 className="text-sm font-bold text-gray-900">Strategic Recommendations</h3>
               </div>
-            ))}
+              <div className="space-y-3">
+                {recommendations.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                    <p className="text-[13px] text-gray-700 leading-relaxed">{r}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* ═══ SALESFORCE-STYLE KPI GRID — 2 rows of metric cards ═══ */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        {/* Row 1 */}
+        <div className="grid grid-cols-4 gap-[1px] bg-gray-200 rounded-xl overflow-hidden mb-[1px]">
+          {[
+            { label: 'Products Tracked', value: totalProducts, sub: `${manufacturers.length} manufacturers`, color: '#8B5CF6', href: '/search', trend: null },
+            { label: 'Enphase Active SKUs', value: enphaseActiveCount, sub: `IQ7 · IQ8 · IQ9 series`, color: '#FF6900', href: '/search?manufacturer=Enphase+Energy', trend: 'up' as const },
+            { label: 'Competitor Launches (30d)', value: competitorLaunches.length, sub: competitorMfgNames.slice(0, 3).join(', ') || 'None', color: '#F59E0B', href: '/changes', trend: competitorLaunches.length > 3 ? 'up' : null },
+            { label: 'Market Reach', value: executiveSummary.enphaseCountries, sub: 'countries with Enphase presence', color: '#3B82F6', href: '/manufacturers', trend: 'up' as const },
+          ].map((kpi) => (
+            <div key={kpi.label} className="bg-white p-5 relative" style={{ borderTop: `3px solid ${kpi.color}` }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
+                <Link href={kpi.href} className="text-gray-300 hover:text-enphase-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></Link>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1.5">
+                <span className="text-[32px] font-bold text-gray-900 leading-none">{kpi.value}</span>
+                {kpi.trend === 'up' && <ArrowUpRight className="w-4 h-4 text-green-500" />}
+              </div>
+              <p className="text-[12px] text-gray-400">{kpi.sub}</p>
+            </div>
+          ))}
+        </div>
+        {/* Row 2 */}
+        <div className="grid grid-cols-4 gap-[1px] bg-gray-200 rounded-xl overflow-hidden">
+          {[
+            { label: 'Enphase Efficiency', value: `${executiveSummary.enphaseAvgEff.toFixed(1)}%`, sub: `vs ${executiveSummary.competitorAvgEff.toFixed(1)}% competitor avg`, color: '#10B981', href: '/compare', trend: executiveSummary.enphaseAvgEff >= executiveSummary.competitorAvgEff ? 'up' as const : 'down' as const },
+            { label: 'Max Power / Module', value: `${executiveSummary.enphaseMaxPower}W`, sub: `vs ${executiveSummary.competitorMaxPower}W competitor max`, color: '#8B5CF6', href: '/compare', trend: executiveSummary.enphaseMaxPower >= executiveSummary.competitorMaxPower ? 'up' as const : 'down' as const },
+            { label: 'Warranty (avg)', value: `${executiveSummary.enphaseAvgWarranty.toFixed(0)} yrs`, sub: `vs ${executiveSummary.competitorAvgWarranty.toFixed(0)} yrs competitor avg`, color: '#F59E0B', href: '/search', trend: executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty ? 'up' as const : null },
+            { label: 'Spec Changes (30d)', value: recentSpecChanges.length, sub: `${directCompetitorChanges.length} from US competitors`, color: '#EF4444', href: '/changes', trend: recentSpecChanges.length > 5 ? 'up' as const : null },
+          ].map((kpi) => (
+            <div key={kpi.label} className="bg-white p-5 relative" style={{ borderTop: `3px solid ${kpi.color}` }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
+                <Link href={kpi.href} className="text-gray-300 hover:text-enphase-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></Link>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1.5">
+                <span className="text-[32px] font-bold text-gray-900 leading-none">{kpi.value}</span>
+                {kpi.trend === 'up' && <ArrowUpRight className="w-4 h-4 text-green-500" />}
+                {kpi.trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+              </div>
+              <p className="text-[12px] text-gray-400">{kpi.sub}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ═══ MIDDLE SECTION: Donut Chart + Recent Activity ═══ */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <div className="grid grid-cols-3 gap-5">
+          {/* Donut Chart — Products by Manufacturer */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">Products by Manufacturer</h3>
+              <Link href="/manufacturers" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative w-[160px] h-[160px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={donutData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={72}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {donutData.map((_, idx) => (
+                        <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => [`${value} SKUs`, '']} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
+                  <span className="text-[10px] text-gray-400">Total</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-1.5">
+                {donutData.map((d, i) => (
+                  <div key={d.name} className="flex items-center justify-between text-[12px]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+                      <span className="text-gray-700">{d.name}</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Competitor Launches */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-enphase-500" /> New Products
+              </h3>
+              <Link href="/changes" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
+            </div>
+            <div className="space-y-1.5">
+              {recentLaunchEvents.map(e => (
+                <Link key={e.id} href={`/changes?highlight=${e.id}`} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 hover:bg-enphase-50 transition-colors group cursor-pointer">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-1.5 h-1.5 rounded-full bg-enphase-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-semibold truncate text-gray-900 group-hover:text-enphase-600">{e.productName.split('(')[0].trim()}</div>
+                      <div className="text-[11px] text-gray-400">{e.manufacturer}</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">{new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Spec Changes */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-500" /> Spec Changes
+              </h3>
+              <Link href="/changes" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
+            </div>
+            <div className="space-y-1.5">
+              {recentChangeEvents_list.map(e => (
+                <Link key={e.id} href={`/changes?highlight=${e.id}`} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors group cursor-pointer">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${e.type === 'SPEC_CHANGE' ? 'bg-amber-500' : e.type === 'PRICE_CHANGE' ? 'bg-emerald-500' : e.type === 'DISCONTINUATION' ? 'bg-red-500' : 'bg-gray-400'}`} />
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-semibold truncate text-gray-900 group-hover:text-blue-600">{e.productName.split('(')[0].trim()}</div>
+                      <div className="text-[11px] text-gray-400">{e.manufacturer} · {e.type.replace(/_/g, ' ').toLowerCase()}</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">{new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══ EVENT LOG TABLE — Salesforce Bug Status style ═══ */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-900">Recent Market Events</h3>
+            <Link href="/changes" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View All Events →</Link>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-100 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-5 py-2.5">Severity</th>
+                <th className="px-5 py-2.5">Product</th>
+                <th className="px-5 py-2.5">Manufacturer</th>
+                <th className="px-5 py-2.5">Type</th>
+                <th className="px-5 py-2.5">Date</th>
+                <th className="px-5 py-2.5">Region</th>
+                <th className="px-5 py-2.5">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEvents.slice(0, 8).map((e) => (
+                <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors text-[12px]">
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      e.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                      e.severity === 'high' ? 'bg-orange-100 text-orange-700' :
+                      e.severity === 'medium' ? 'bg-amber-100 text-amber-700' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>{e.severity}</span>
+                  </td>
+                  <td className="px-5 py-3 font-medium text-gray-900 max-w-[200px] truncate">{e.productName.split('(')[0].trim()}</td>
+                  <td className="px-5 py-3 text-gray-600">{e.manufacturer}</td>
+                  <td className="px-5 py-3">
+                    <span className={`text-[11px] font-medium ${
+                      e.type === 'NEW_PRODUCT' ? 'text-green-600' :
+                      e.type === 'SPEC_CHANGE' ? 'text-amber-600' :
+                      e.type === 'DISCONTINUATION' ? 'text-red-600' :
+                      'text-gray-500'
+                    }`}>{e.type.replace(/_/g, ' ')}</span>
+                  </td>
+                  <td className="px-5 py-3 text-gray-500">{new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td className="px-5 py-3 text-gray-500">{e.region || e.country || '—'}</td>
+                  <td className="px-5 py-3 text-gray-500 max-w-[300px] truncate">{e.description.split('.')[0]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
       </div>
     </motion.div>
   );

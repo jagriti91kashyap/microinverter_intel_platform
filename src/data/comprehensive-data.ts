@@ -63,6 +63,16 @@ export interface RegionalVariant {
   notes?: string;
 }
 
+export interface RegionalPrice {
+  region: string;  // e.g. 'NA', 'EU', 'EU-DE', 'APAC', 'JP', 'IN', 'AU', 'BR'
+  price: number;
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'INR' | 'BRL' | 'CAD' | 'CHF' | 'SEK' | 'NOK' | 'DKK' | 'ZAR';
+  source: string;  // e.g. 'Enphase Official Store', 'Distributor', 'Retailer', 'Estimated'
+  sourceUrl?: string;
+  lastUpdated: string;  // ISO date string
+  confidence: number;  // 0-1, confidence in price accuracy
+}
+
 export interface RegionalWebsite {
   language: string;
   url: string;
@@ -105,7 +115,9 @@ export interface Product {
   manufacturerId: string;
   manufacturer: Manufacturer;
   countries: string[];
-  price?: number;
+  price?: number;  // DEPRECATED: Use regionalPrices instead for multi-region pricing
+  currency?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'INR' | 'BRL' | 'CAD' | 'CHF' | 'SEK' | 'NOK' | 'DKK' | 'ZAR';  // Currency for legacy price field
+  regionalPrices?: RegionalPrice[];  // NEW: Regional pricing with source documentation
   availability: 'IN_STOCK' | 'OUT_OF_STOCK' | 'LIMITED';
   launchDate: string;
   lastUpdated: string;
@@ -142,7 +154,7 @@ export interface Product {
 }
 
 export const manufacturers: Manufacturer[] = [
-  { id: '1', name: 'Enphase Energy', country: 'United States', website: 'https://enphase.com', isActive: true, foundedYear: 2006, description: 'World leader in microinverter technology with approximately 87.8 million microinverters shipped across 165+ countries. Pioneer of GaN-based IQ9 series. Also offers IQ Batteries, EV chargers, IQ Air smart thermostat, and VPP solutions.', headquarters: 'Fremont, CA, USA', totalProducts: 14, regionalWebsites: [
+  { id: '1', name: 'Enphase Energy', country: 'United States', website: 'https://enphase.com', isActive: true, foundedYear: 2006, description: 'World leader in microinverter technology with approximately 87.8 million microinverters shipped across 160+ countries. Pioneer of GaN-based IQ9 series. Also offers IQ Batteries, EV chargers, IQ Air smart thermostat, and VPP solutions.', headquarters: 'Fremont, CA, USA', totalProducts: 14, regionalWebsites: [
     { language: 'en', url: 'https://enphase.com', region: 'North America', country: 'United States' },
     { language: 'de', url: 'https://enphase.com/de-de', region: 'Europe', country: 'Germany' },
     { language: 'fr', url: 'https://enphase.com/fr-fr', region: 'Europe', country: 'France' },
@@ -274,6 +286,10 @@ export const manufacturers: Manufacturer[] = [
 ];
 
 import { buildProducts, applyRegionalVariants, splitProductsByRegionalSKU } from './products-data';
+
+// Base products BEFORE regional split — retains original country arrays (incl. APAC/LATAM/MEA)
+// Use this for country-reach calculations; use `products` for per-region SKU views
+export const baseProducts: Product[] = buildProducts(manufacturers);
 
 export const products: Product[] = splitProductsByRegionalSKU(applyRegionalVariants(buildProducts(manufacturers)));
 

@@ -136,10 +136,6 @@ export default function ManufacturersPage() {
                       <div className="text-sm font-medium text-green-600">{m.activeCount}</div>
                       <div className="text-xs text-gray-400">Active</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">{m.avgConfidence}%</div>
-                      <div className="text-xs text-gray-400">AI Conf</div>
-                    </div>
 
                     {/* Map toggle */}
                     <button

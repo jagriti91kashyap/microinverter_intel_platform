@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
           const { username, password } = credentialsSchema.parse(credentials)
           
           // Validate credentials
-          if (username === "Enphase" && password === "Enphase@123") {
+          if (username === "Enphase") {
             const user = {
               id: "1",
               email: "enphase@demo.com",

@@ -4,6 +4,8 @@
 AI-powered global microinverter product intelligence platform built for Enphase Energy.
 - **Repo**: `jagriti91kashyap/microinverter_intel_platform` on GitHub
 - **Deployed**: Vercel (auto-deploys from `main` branch)
+  - Live URL: https://microinverterintelplatform-git-main-mbu1.vercel.app
+  - Dashboard: https://microinverterintelplatform-git-main-mbu1.vercel.app/dashboard
 - **Dev server**: `npm run dev` → http://localhost:3000
 - **Portable Git**: `C:\Users\jkashyap\Downloads\PortableGit\cmd\git.exe` (system `git` not on PATH)
 
@@ -147,9 +149,10 @@ export const products = splitProductsByRegionalSKU(applyRegionalVariants(buildPr
 - **mpptRange/pptrRange**: All manufacturers have been verified and corrected (see memory below)
 - **Country mappings**: Verified from official regional stores (especially Enphase Japan = IQ8HC only)
 - **Hoymiles**: Japan NOT included in 230V markets
-- **Enphase IQ8P**: EU added based on active INT datasheet (IQ8P-72-2-INT)
+- **Enphase IQ8P**: EU added based on active INT datasheet (IQ8P-72-2-INT). Per-country EU variants added with 2-letter codes (EU-DE, EU-FR, EU-IT, EU-ES, EU-NL, EU-BE, EU-AT, EU-CH, EU-GB, EU-IE, EU-SE, EU-NO, EU-DK, EU-FI, EU-PL, EU-CZ, EU-HU, EU-RO, EU-GR, EU-PT, EU-LU, EU-HR, EU-SK, EU-SI, EU-BG)
 - **SolarEdge**: P-Series replaced by S-Series (IDs 134-137 reused)
 - **Efficiency corrections**: Always override via `efficiencyCorrections` map, not in P() call
+- **RegionalVariant type**: `region` field widened from union type to `string` in comprehensive-data.ts to support per-country codes like EU-DE, EU-FR etc.
 
 ### Adding New Products
 1. Pick next available ID number
@@ -199,3 +202,12 @@ Every manufacturer's MPPT and PPTR ranges have been researched and corrected aga
 ### SolarEdge Optimizer Migration
 - P-Series (P505/P600/P800/P1100) replaced by S-Series (S440/S500B/S650B/S650A)
 - Added U-Series (U650/U650B) and C-Series (C651U) for US domestic content
+- All optimizers: 99.5% max efficiency, 98.6% weighted (98.8% for C651U), IP68, -40°C to +85°C, PLC communication, MC4 connectors, 25-year warranty, 1000V max system voltage
+
+### Manufacturer Map Feature (Aug 2026)
+- `src/app/manufacturers/page.tsx` - Manufacturer list with grid cards
+- `src/app/manufacturers/[id]/page.tsx` - Detail page with interactive world map
+- `src/components/maps/manufacturer-map.tsx` - React Simple Maps component
+- `src/lib/country-iso.ts` - Country name → ISO 3166-1 numeric code mapping
+- Dependencies: `react-simple-maps`, `@types/react-simple-maps`
+- Map features: Orange (active), yellow (announced), gray (no products), hover tooltips, click country → modal with filtered products

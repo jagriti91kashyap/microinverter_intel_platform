@@ -136,12 +136,12 @@ export function DashboardContent() {
       changeType: 'positive' as const
     },
     {
-      title: 'Active Jobs',
-      value: kpiData?.activeJobs || 0,
-      description: 'Data processing jobs',
-      icon: Activity,
-      change: '-2',
-      changeType: 'negative' as const
+      title: 'Countries Tracked',
+      value: kpiData?.countriesTracked || 0,
+      description: 'Markets with product availability',
+      icon: Globe,
+      change: '+23',
+      changeType: 'positive' as const
     }
   ];
 
@@ -235,23 +235,59 @@ export function DashboardContent() {
         </Card>
       </div>
 
-      {/* Global Availability Map Placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Global Product Availability</CardTitle>
-          <CardDescription>
-            Geographic distribution of available products
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">Interactive map coming soon</p>
+      {/* Global Availability */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Markets by Products Available</CardTitle>
+            <CardDescription>
+              Countries with the most product options
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {kpiData?.productsByCountry?.slice(0, 8).map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium">{item.country}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-24 bg-muted rounded-full h-2">
+                      <div
+                        className="bg-orange-500 h-2 rounded-full"
+                        style={{ width: `${Math.min(100, (item.count / (kpiData?.totalProducts || 1)) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-sm text-muted-foreground w-8 text-right">{item.count}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Manufacturer Global Reach</CardTitle>
+            <CardDescription>
+              Countries tracked per manufacturer
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {kpiData?.topManufacturerCountries?.slice(0, 8).map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{item.manufacturer}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {item.countriesTracked} countries
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card>

@@ -1,8 +1,8 @@
 # Complete Microinverter Product Inventory
 
-## Current Database Status (Updated Jul 23, 2025)
-- **Total Products**: 119 models (+20 added)
-- **Manufacturers**: 18 companies
+## Current Database Status (Updated Oct 2026)
+- **Total Products**: ~167 models
+- **Manufacturers**: 21 companies
 
 ---
 
@@ -116,6 +116,61 @@
 
 ---
 
+## SOLAREDGE (12 models in DB)
+
+### Power Optimizers (Current):
+| Model | Power | Countries | Notes |
+|-------|-------|-----------|-------|
+| S440 | 440W | NA+EU+AU+NZ+IN | Flat bracket, 60V max Voc |
+| S500B | 500W (650W after Aug 2024) | NA+EU+AU+NZ+IN | Bent bracket, 125V max Voc |
+| S650B | 650W | NA+EU+AU+NZ+IN | Bent bracket, 85V max Voc |
+| S650A | 650W | EU+AU only | 110V output, 3-phase Wave/Hub only |
+| U650 | 650W | NA only | Flat bracket, 60V max Voc, ITC bonus |
+| U650B | 650W | NA only | Bent bracket, 100V max Voc, ITC bonus |
+| C651U | 650W | NA only | 24A output, Synergy 3-phase, ITC bonus |
+
+### String Inverters:
+| Model | Power | Countries |
+|-------|-------|-----------|
+| HD-Wave 3000-5000 | 3-5kW | Global |
+| HD-Wave 6000-8000 | 6-8kW | Global |
+| HD-Wave 10000 | 10kW | Global |
+
+### All Optimizers Share:
+- 99.5% max efficiency, 98.6% weighted (98.8% for C651U)
+- IP68, -40°C to +85°C, PLC communication, MC4 connectors
+- 25-year warranty, 1000V max system voltage
+
+---
+
+## ANKER (1 model in DB)
+
+### Currently in Database:
+| Model | Power | Countries | Type |
+|-------|-------|-----------|------|
+| SOLIX Solarbank 4 E5000 Pro | 2500W AC output, 5024Wh LiFePO4 | EU | Plug-in Battery Storage |
+
+---
+
+## MARSTEK (1 model in DB)
+
+### Currently in Database:
+| Model | Power | Countries | Type |
+|-------|-------|-----------|------|
+| Venus B | 800VA/1.5kVA output, 2kWh LiFePO4 | EU | Plug-in Battery Storage |
+
+---
+
+## ECOFLOW (2 models in DB)
+
+### Currently in Database:
+| Model | Power | Countries | Type |
+|-------|-------|-----------|------|
+| STREAM 800 | 800W MI | EU | Microinverter |
+| STREAM Ultra | 2400W output + 5kWh LiFePO4 | NA | Plug-in Battery Storage |
+
+---
+
 ## COUNTRY AVAILABILITY ISSUES
 
 ### Japan Market (Verified):
@@ -151,14 +206,18 @@
 | Manufacturer | In DB | Missing | Total Active |
 |--------------|-------|---------|--------------|
 | Enphase | 16 | 6 | 22 |
-| APsystems | 7 | 14 | 21 |
-| Hoymiles | 10 | 20 | 30 |
+| APsystems | 12 | 14 | 26 |
+| Hoymiles | 38 | 20 | 58 |
 | Deye | 10 | 0 | 10 |
-| Sigenergy | 5 | 0 | 5 |
+| Sigenergy | 8 | 0 | 8 |
 | Envertech | 8 | 0 | 8 |
-| **TOTAL** | **99** | **~40** | **~140** |
+| SolarEdge | 12 | 0 | 12 |
+| Anker | 1 | 0 | 1 |
+| Marstek | 1 | 0 | 1 |
+| EcoFlow | 2 | 0 | 2 |
+| **TOTAL** | **~108** | **~40** | **~148** |
 
 ---
 
-*Last Updated: July 2025*
+*Last Updated: October 2026*
 *Source: Official manufacturer websites and regional stores*
