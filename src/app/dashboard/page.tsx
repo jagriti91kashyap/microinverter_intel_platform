@@ -425,27 +425,26 @@ export default function Dashboard() {
               <Link href="/manufacturers" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
             </div>
             <div className="flex gap-4">
-              <div className="relative flex-shrink-0" style={{ width: 180, height: 180 }}>
-                <PieChart width={180} height={180}>
-                  <Pie
-                    data={donutData}
-                    cx={90}
-                    cy={90}
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {donutData.map((_, idx) => (
-                      <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => [`${value} SKUs`, '']} />
-                </PieChart>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
-                  <span className="text-[10px] text-gray-400">Total</span>
+              {/* CSS Donut Chart */}
+              <div className="relative flex-shrink-0" style={{ width: 160, height: 160 }}>
+                <div className="rounded-full" style={{
+                  width: 160, height: 160,
+                  background: (() => {
+                    const total = donutData.reduce((s, d) => s + d.value, 0);
+                    let cumulative = 0;
+                    const stops = donutData.map((d, i) => {
+                      const start = cumulative;
+                      cumulative += (d.value / total) * 360;
+                      return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${start}deg ${cumulative}deg`;
+                    });
+                    return `conic-gradient(${stops.join(', ')})`;
+                  })(),
+                }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="rounded-full bg-white flex flex-col items-center justify-center" style={{ width: 100, height: 100 }}>
+                    <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
+                    <span className="text-[10px] text-gray-400">Total</span>
+                  </div>
                 </div>
               </div>
               <div className="flex-1 space-y-1.5 pt-2">
