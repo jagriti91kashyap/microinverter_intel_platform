@@ -12,6 +12,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import Link from 'next/link';
 import { products, baseProducts, manufacturers, changeEvents } from '@/data/comprehensive-data';
 
+const DONUT_COLORS = ['#FF6900', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#94A3B8'];
+
 export default function Dashboard() {
   const router = useRouter();
 
@@ -174,7 +176,6 @@ export default function Dashboard() {
   }, [enphaseProducts, competitorProducts, recentEvents, manufacturers, baseProducts]);
 
   // Donut chart data — products by manufacturer (top 6 + Others)
-  const DONUT_COLORS = ['#FF6900', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#94A3B8'];
   const donutData = useMemo(() => {
     const mfrCounts: Record<string, number> = {};
     products.forEach(p => {
@@ -186,6 +187,19 @@ export default function Dashboard() {
     if (othersCount > 0) top6.push({ name: 'Others', value: othersCount });
     return top6;
   }, []);
+
+  // Precompute conic-gradient for the donut chart
+  const donutGradient = useMemo(() => {
+    const total = donutData.reduce((s, d) => s + d.value, 0);
+    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+    let cumulative = 0;
+    const stops = donutData.map((d, i) => {
+      const start = cumulative;
+      cumulative += (d.value / total) * 360;
+      return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${start}deg ${cumulative}deg`;
+    });
+    return `conic-gradient(${stops.join(', ')})`;
+  }, [donutData]);
 
   // Build highlight bullets
   const highlights = useMemo(() => {
@@ -425,20 +439,12 @@ export default function Dashboard() {
               <Link href="/manufacturers" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
             </div>
             <div className="flex gap-4">
-              {/* CSS Donut Chart */}
+              {/* CSS Donut Chart — uses backgroundImage to avoid globals.css overrides */}
               <div className="relative flex-shrink-0" style={{ width: 160, height: 160 }}>
                 <div className="rounded-full" style={{
-                  width: 160, height: 160,
-                  background: (() => {
-                    const total = donutData.reduce((s, d) => s + d.value, 0);
-                    let cumulative = 0;
-                    const stops = donutData.map((d, i) => {
-                      const start = cumulative;
-                      cumulative += (d.value / total) * 360;
-                      return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${start}deg ${cumulative}deg`;
-                    });
-                    return `conic-gradient(${stops.join(', ')})`;
-                  })(),
+                  width: 160,
+                  height: 160,
+                  backgroundImage: donutGradient,
                 }} />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="rounded-full bg-white flex flex-col items-center justify-center" style={{ width: 100, height: 100 }}>
