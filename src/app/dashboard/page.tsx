@@ -210,7 +210,7 @@ export default function Dashboard() {
   // Build highlight bullets
   const highlights = useMemo(() => {
     const items: string[] = [];
-    items.push(`${enphaseActiveCount} active SKUs across ${executiveSummary.enphaseCountries}+ countries — #1 residential reach`);
+    items.push(`${enphaseActiveCount} active SKUs across ${executiveSummary.enphaseCountries} countries — #1 residential reach`);
     if (executiveSummary.enphaseAvgEff > executiveSummary.competitorAvgEff) {
       items.push(`Efficiency edge: ${executiveSummary.enphaseAvgEff.toFixed(1)}% vs ${executiveSummary.competitorAvgEff.toFixed(1)}% competitor avg`);
     }
@@ -222,7 +222,7 @@ export default function Dashboard() {
     const items: { text: string; severity: 'high' | 'medium' }[] = [];
     if (executiveSummary.competitorMaxPower > executiveSummary.enphaseMaxPower) {
       items.push({
-        text: `Power gap: competitors at ${executiveSummary.competitorMaxPower}W vs Enphase ${executiveSummary.enphaseMaxPower}W`,
+        text: `Power gap: ${executiveSummary.competitorMaxPowerProduct} at ${executiveSummary.competitorMaxPower}W vs Enphase ${executiveSummary.enphaseMaxPower}W`,
         severity: 'high',
       });
     }
@@ -239,7 +239,7 @@ export default function Dashboard() {
   const recommendations = useMemo(() => {
     const items: string[] = [];
     if (executiveSummary.competitorMaxPower > executiveSummary.enphaseMaxPower) {
-      items.push(`Evaluate high-power MI roadmap — competitors at ${executiveSummary.competitorMaxPower}W`);
+      items.push(`Evaluate high-power MI roadmap — ${executiveSummary.competitorMaxPowerProduct} at ${executiveSummary.competitorMaxPower}W`);
     }
     items.push(`Track ${executiveSummary.topCompetitors[0]?.[0] || 'top competitor'} (${executiveSummary.topCompetitors[0]?.[1] || 0} SKUs) — largest portfolio threat`);
     return items.slice(0, 2);
