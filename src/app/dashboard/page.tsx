@@ -370,16 +370,16 @@ export default function Dashboard() {
             { label: 'Competitor Launches (30d)', value: competitorLaunches.length, sub: competitorMfgNames.slice(0, 3).join(', ') || 'None', color: '#F59E0B', href: '/changes', trend: competitorLaunches.length > 3 ? 'up' : null },
             { label: 'Market Reach', value: executiveSummary.enphaseCountries, sub: 'countries with Enphase presence', color: '#3B82F6', href: '/manufacturers', trend: 'up' as const },
           ].map((kpi) => (
-            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-md transition-all group border-t-4" style={{ borderTopColor: kpi.color, pointerEvents: 'auto' }}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
+            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-lg transition-all group border-l-4" style={{ borderLeftColor: kpi.color, pointerEvents: 'auto' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{kpi.label}</span>
                 <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
               </div>
-              <div className="flex items-baseline gap-2 mb-1.5">
-                <span className="text-[32px] font-bold text-gray-900 leading-none">{kpi.value}</span>
-                {kpi.trend === 'up' && <ArrowUpRight className="w-4 h-4 text-green-500" />}
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-bold text-gray-900 leading-none">{kpi.value}</span>
+                {kpi.trend === 'up' && <ArrowUpRight className="w-5 h-5 text-green-500" />}
               </div>
-              <p className="text-[12px] text-gray-400">{kpi.sub}</p>
+              <p className="text-[12px] text-gray-500">{kpi.sub}</p>
             </div>
           ))}
         </div>
@@ -391,7 +391,7 @@ export default function Dashboard() {
             { label: 'Warranty (avg)', value: `${executiveSummary.enphaseAvgWarranty.toFixed(0)} yrs`, sub: `vs ${executiveSummary.competitorAvgWarranty.toFixed(0)} yrs competitor avg`, color: '#F59E0B', href: '/search', trend: executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty ? 'up' as const : null },
             { label: 'Spec Changes (30d)', value: recentSpecChanges.length, sub: `${directCompetitorChanges.length} from US competitors`, color: '#EF4444', href: '/changes', trend: recentSpecChanges.length > 5 ? 'up' as const : null },
           ].map((kpi) => (
-            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-md transition-all group border-t-4" style={{ borderTopColor: kpi.color, pointerEvents: 'auto' }}>
+            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-lg transition-all group border-l-4" style={{ borderLeftColor: kpi.color, pointerEvents: 'auto' }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
                 <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
