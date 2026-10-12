@@ -89,7 +89,6 @@ async function listCrawlJobs(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('List crawl jobs error:', error);
     return NextResponse.json(
       { error: 'Failed to list crawl jobs' },
       { status: 500 }

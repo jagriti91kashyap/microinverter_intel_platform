@@ -99,8 +99,6 @@ async function startCrawl(req: NextRequest) {
       metadata: body.metadata || {},
     });
 
-    console.log(`Crawl job added: ${job.id} for ${body.url}`);
-
     return NextResponse.json({
       success: true,
       jobId: job.id,
@@ -109,7 +107,6 @@ async function startCrawl(req: NextRequest) {
       status: 'queued',
     });
   } catch (error) {
-    console.error('Start crawl error:', error);
     return NextResponse.json(
       { error: 'Failed to start crawl' },
       { status: 500 }

@@ -91,7 +91,6 @@ async function extractSpecifications(req: NextRequest) {
       count: result.specifications.length,
     });
   } catch (error) {
-    console.error('AI extraction error:', error);
     return NextResponse.json(
       { error: 'Failed to extract specifications' },
       { status: 500 }

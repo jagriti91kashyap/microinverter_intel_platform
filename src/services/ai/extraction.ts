@@ -126,7 +126,6 @@ export class AIExtractionService {
         extractedAt: new Date(),
       };
     } catch (error) {
-      console.error('AI extraction error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to extract specifications: ${errorMessage}`);
     }
@@ -172,7 +171,7 @@ export class AIExtractionService {
 
       return completion.content[0]?.type === 'text' ? completion.content[0].text.trim() : '';
     } catch (error) {
-      console.error('Summary generation error:', error);
+      // Summary generation error
       return '';
     }
   }
@@ -402,18 +401,18 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
                   results.push(extractionResult);
                 }
               } catch (contentError) {
-                console.error(`Failed to extract content from ${result.url}:`, contentError);
+                // Failed to extract content
               }
             }
           }
         } catch (searchError) {
-          console.error(`Web search failed for query "${query}":`, searchError);
+          // Web search failed
         }
       }
 
       return results;
     } catch (error) {
-      console.error('Web extraction error:', error);
+      // Web extraction error
       throw new Error(`Failed to extract from web search: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -425,7 +424,7 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
     try {
       // This would use a web scraping service like Playwright or Cheerio
       // For now, return null - would be implemented with actual web scraping
-      console.log(`Extracting content from: ${url}`);
+      // Extracting content from URL
       
       // TODO: Implement actual webpage content extraction
       // This would:
@@ -436,7 +435,7 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
       
       return null;
     } catch (error) {
-      console.error(`Failed to extract content from ${url}:`, error);
+      // Failed to extract content from URL
       return null;
     }
   }
@@ -491,7 +490,7 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
 
       return completion.content[0]?.type === 'text' ? completion.content[0].text.trim() : '';
     } catch (error) {
-      console.error('Summary generation error:', error);
+      // Summary generation error
       return '';
     }
   }
@@ -580,7 +579,7 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
         if (pattern.test(spec.name)) {
           const numVal = parseFloat(spec.value);
           if (!isNaN(numVal) && (numVal < min || numVal > max)) {
-            console.warn(`[Validation] "${spec.name}" value ${numVal} outside expected range [${min}, ${max}] — lowering confidence`);
+            // Value outside expected range - lowering confidence
             validated.confidence = Math.min(validated.confidence, 0.3);
             validated.isVerified = false;
           }
@@ -614,7 +613,7 @@ Expected: extract "MPPT Voltage Range" = "16-60", "Maximum Input Voltage (Voc)" 
       return existingSpecs; // All mandatory fields found
     }
 
-    console.log(`[Second-pass] ${missingFields.length} required fields missing: ${missingFields.map(f => f.name).join(', ')}`);
+    // Second-pass extraction: missing fields
 
     const missingList = missingFields
       .map(f => `- "${f.name}" (${f.category}): ${f.description}${f.aliases ? ` — also labeled as: ${f.aliases.join(', ')}` : ''}`)
@@ -655,7 +654,7 @@ Instructions:
       const normalized = this.normalizeSpecifications(newSpecs);
       const validated = this.validateExtractedSpecs(normalized);
 
-      console.log(`[Second-pass] Recovered ${validated.length} additional specs`);
+      // Second-pass extraction: recovered additional specs
 
       // Merge — only add genuinely new fields
       const merged = [...existingSpecs];
@@ -667,7 +666,7 @@ Instructions:
 
       return merged;
     } catch (error) {
-      console.error('[Second-pass] extraction failed:', error);
+      // Second-pass extraction failed
       return existingSpecs;
     }
   }
@@ -734,3 +733,4 @@ Instructions:
 }
 
 export const aiExtractionService = new AIExtractionService();
+                         

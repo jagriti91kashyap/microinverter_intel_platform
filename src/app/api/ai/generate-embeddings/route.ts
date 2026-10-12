@@ -92,7 +92,6 @@ async function generateEmbeddings(req: NextRequest) {
       type: body.type,
     });
   } catch (error) {
-    console.error('Generate embeddings error:', error);
     return NextResponse.json(
       { error: 'Failed to generate embeddings' },
       { status: 500 }

@@ -241,7 +241,6 @@ async function detectChanges(req: NextRequest) {
       totalChanges: changeRecords.length,
     });
   } catch (error) {
-    console.error('Change detection error:', error);
     return NextResponse.json(
       { error: 'Failed to detect changes' },
       { status: 500 }

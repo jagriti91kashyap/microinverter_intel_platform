@@ -262,7 +262,6 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Market search error:', error);
     return NextResponse.json(
       { error: 'Failed to search market' },
       { status: 500 }

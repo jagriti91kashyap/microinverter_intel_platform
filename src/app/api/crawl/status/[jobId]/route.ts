@@ -103,7 +103,6 @@ async function getCrawlStatus(req: NextRequest, { params }: { params: Promise<{ 
       error: job.error,
     });
   } catch (error) {
-    console.error('Get crawl status error:', error);
     return NextResponse.json(
       { error: 'Failed to get crawl status' },
       { status: 500 }

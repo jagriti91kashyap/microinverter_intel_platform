@@ -54,7 +54,6 @@ async function semanticSearch(req: NextRequest) {
       filters: body.filters,
     });
   } catch (error) {
-    console.error('Semantic search error:', error);
     return NextResponse.json(
       { error: 'Failed to perform semantic search' },
       { status: 500 }

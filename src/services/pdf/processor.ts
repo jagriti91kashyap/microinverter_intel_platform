@@ -73,7 +73,6 @@ export class PDFProcessingService {
 
       return { filename, path: filePath, fileSize };
     } catch (error) {
-      console.error('PDF download error:', error);
       throw new Error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -93,7 +92,6 @@ export class PDFProcessingService {
         pageCount: data.numpages || 0,
       };
     } catch (error) {
-      console.error('PDF text extraction error:', error);
       throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -121,7 +119,6 @@ export class PDFProcessingService {
         fileSize: stats.size,
       };
     } catch (error) {
-      console.error('PDF metadata extraction error:', error);
       throw new Error(`Failed to extract PDF metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -131,7 +128,6 @@ export class PDFProcessingService {
    */
   async processPDF(request: PDFProcessingRequest): Promise<PDFProcessingResult> {
     try {
-      console.log(`Processing PDF: ${request.url}`);
 
       // Download PDF
       const { filename, path: filePath, fileSize } = await this.downloadPDF(request.url);
@@ -197,7 +193,6 @@ export class PDFProcessingService {
         );
         
       } catch (error) {
-        console.error('Specification extraction failed:', error);
         // Continue with empty specifications
       }
 
@@ -213,7 +208,7 @@ export class PDFProcessingService {
         });
       }
 
-      console.log(`PDF processing completed: ${filename} — ${specifications.length} specs extracted`);
+      // PDF processing completed
       
       return {
         success: true,
@@ -224,7 +219,6 @@ export class PDFProcessingService {
         specifications,
       };
     } catch (error) {
-      console.error('PDF processing error:', error);
       return {
         success: false,
         filename: '',
@@ -296,7 +290,6 @@ export class PDFProcessingService {
         )
       `;
     } catch (error) {
-      console.error('Failed to store datasheet record:', error);
       // Don't throw - the PDF processing was successful
     }
   }
@@ -320,7 +313,6 @@ export class PDFProcessingService {
       
       return tables;
     } catch (error) {
-      console.error('PDF table extraction error:', error);
       return [];
     }
   }
@@ -483,7 +475,6 @@ export class PDFProcessingService {
       
       return specifications;
     } catch (error) {
-      console.error('Specification table extraction error:', error);
       return [];
     }
   }
@@ -554,10 +545,8 @@ export class PDFProcessingService {
     try {
       // This would require a PDF library that can handle images
       // For now, return empty array
-      console.log('Image extraction not yet implemented');
       return [];
     } catch (error) {
-      console.error('PDF image extraction error:', error);
       return [];
     }
   }
@@ -576,11 +565,9 @@ export class PDFProcessingService {
         
         if (stats.mtime.getTime() < cutoffTime) {
           fs.unlinkSync(filePath);
-          console.log(`Deleted old PDF: ${file}`);
         }
       }
     } catch (error) {
-      console.error('Cleanup error:', error);
     }
   }
 
@@ -596,7 +583,6 @@ export class PDFProcessingService {
 
       return await this.extractPDFMetadata(filePath);
     } catch (error) {
-      console.error('Get PDF info error:', error);
       return null;
     }
   }
@@ -613,7 +599,6 @@ export class PDFProcessingService {
 
       return datasheets[0]?.filename || null;
     } catch (error) {
-      console.error('Check PDF existence error:', error);
       return null;
     }
   }
@@ -693,7 +678,6 @@ export class PDFProcessingService {
         newestFile: files.length > 0 ? new Date(newestTime) : null,
       };
     } catch (error) {
-      console.error('Get storage stats error:', error);
       return {
         totalFiles: 0,
         totalSize: 0,
