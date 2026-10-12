@@ -511,29 +511,31 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {sortedEvents.slice(0, 8).map((e) => (
-                <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors text-[12px]">
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      e.severity === 'critical' ? 'bg-red-100 text-red-700' :
-                      e.severity === 'high' ? 'bg-orange-100 text-orange-700' :
-                      e.severity === 'medium' ? 'bg-amber-100 text-amber-700' :
-                      'bg-gray-100 text-gray-500'
-                    }`}>{e.severity}</span>
-                  </td>
-                  <td className="px-5 py-3 font-medium text-gray-900 max-w-[200px] truncate">{e.productName.split('(')[0].trim()}</td>
-                  <td className="px-5 py-3 text-gray-600">{e.manufacturer}</td>
-                  <td className="px-5 py-3">
-                    <span className={`text-[11px] font-medium ${
-                      e.type === 'NEW_PRODUCT' ? 'text-green-600' :
-                      e.type === 'SPEC_CHANGE' ? 'text-amber-600' :
-                      e.type === 'DISCONTINUATION' ? 'text-red-600' :
-                      'text-gray-500'
-                    }`}>{e.type.replace(/_/g, ' ')}</span>
-                  </td>
-                  <td className="px-5 py-3 text-gray-500">{new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                  <td className="px-5 py-3 text-gray-500">{e.region || e.country || '—'}</td>
-                  <td className="px-5 py-3 text-gray-500 max-w-[300px] truncate">{e.description.split('.')[0]}</td>
-                </tr>
+                <Link key={e.id} href={`/changes?highlight=${e.id}`}>
+                  <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors text-[12px] cursor-pointer">
+                    <td className="px-5 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        e.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                        e.severity === 'high' ? 'bg-orange-100 text-orange-700' :
+                        e.severity === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>{e.severity}</span>
+                    </td>
+                    <td className="px-5 py-3 font-medium text-gray-900 max-w-[200px] truncate">{e.productName.split('(')[0].trim()}</td>
+                    <td className="px-5 py-3 text-gray-600">{e.manufacturer}</td>
+                    <td className="px-5 py-3">
+                      <span className={`text-[11px] font-medium ${
+                        e.type === 'NEW_PRODUCT' ? 'text-green-600' :
+                        e.type === 'SPEC_CHANGE' ? 'text-amber-600' :
+                        e.type === 'DISCONTINUATION' ? 'text-red-600' :
+                        'text-gray-500'
+                      }`}>{e.type.replace(/_/g, ' ')}</span>
+                    </td>
+                    <td className="px-5 py-3 text-gray-500">{new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td className="px-5 py-3 text-gray-500">{e.region || e.country || '—'}</td>
+                    <td className="px-5 py-3 text-gray-500 max-w-[300px] truncate">{e.description.split('.')[0]}</td>
+                  </tr>
+                </Link>
               ))}
             </tbody>
           </table>
