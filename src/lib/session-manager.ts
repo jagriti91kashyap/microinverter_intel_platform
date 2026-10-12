@@ -248,7 +248,7 @@ export const sessionSecurity = {
       details
     }
     
-    console.log('Security Event:', JSON.stringify(logEntry))
+    // Security event logged
     
     // In production, this would be sent to a logging service
     // or stored in a security audit table

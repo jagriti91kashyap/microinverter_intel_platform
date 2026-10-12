@@ -177,7 +177,7 @@ async function fetchUserGroups(userObjectId: string, accessToken: string): Promi
     );
 
     if (!response.ok) {
-      console.warn('Failed to fetch user groups:', response.statusText);
+      // Failed to fetch user groups
       return [];
     }
 

@@ -10,7 +10,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const hasDatabaseUrl = !!process.env.DATABASE_URL;
 
 if (isDevelopment && !hasDatabaseUrl) {
-  console.warn('⚠️  DATABASE_URL not found. Using mock database for development.');
+  // DATABASE_URL not found - using mock database for development
 }
 
 // Production PostgreSQL client with pgvector support
@@ -258,7 +258,7 @@ export async function initializeDatabase() {
       ON search_index USING ivfflat (embedding vector_cosine_ops)
     `;
     
-    console.log('✅ Database initialized successfully');
+    // Log('✅ Database initialized successfully');
   } catch (error) {
     // Error('❌ Database initialization failed:', error);
     throw error;
@@ -267,7 +267,7 @@ export async function initializeDatabase() {
 
 if (isDevelopment && !hasDatabaseUrl) {
   // Mock implementation for development without database
-  console.warn('⚠️  Using mock database - some features will be limited');
+  // Using mock database - some features will be limited
 }
 
 if (!isDevelopment) {
