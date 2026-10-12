@@ -9,7 +9,6 @@ import {
   TrendingUp, ShieldAlert, Lightbulb, Target, ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import Link from 'next/link';
 import { products, baseProducts, manufacturers, changeEvents } from '@/data/comprehensive-data';
 
 export default function Dashboard() {
@@ -370,10 +369,10 @@ export default function Dashboard() {
             { label: 'Competitor Launches (30d)', value: competitorLaunches.length, sub: competitorMfgNames.slice(0, 3).join(', ') || 'None', color: '#F59E0B', href: '/changes', trend: competitorLaunches.length > 3 ? 'up' : null },
             { label: 'Market Reach', value: executiveSummary.enphaseCountries, sub: 'countries with Enphase presence', color: '#3B82F6', href: '/manufacturers', trend: 'up' as const },
           ].map((kpi) => (
-            <div key={kpi.label} className="bg-white p-5 relative" style={{ borderTop: `3px solid ${kpi.color}` }}>
+            <div key={kpi.label} onClick={() => router.push(kpi.href)} className="bg-white p-5 relative cursor-pointer hover:bg-gray-50 transition-colors" style={{ borderTop: `3px solid ${kpi.color}` }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
-                <Link href={kpi.href} className="text-gray-300 hover:text-enphase-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></Link>
+                <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
               </div>
               <div className="flex items-baseline gap-2 mb-1.5">
                 <span className="text-[32px] font-bold text-gray-900 leading-none">{kpi.value}</span>
@@ -391,10 +390,10 @@ export default function Dashboard() {
             { label: 'Warranty (avg)', value: `${executiveSummary.enphaseAvgWarranty.toFixed(0)} yrs`, sub: `vs ${executiveSummary.competitorAvgWarranty.toFixed(0)} yrs competitor avg`, color: '#F59E0B', href: '/search', trend: executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty ? 'up' as const : null },
             { label: 'Spec Changes (30d)', value: recentSpecChanges.length, sub: `${directCompetitorChanges.length} from US competitors`, color: '#EF4444', href: '/changes', trend: recentSpecChanges.length > 5 ? 'up' as const : null },
           ].map((kpi) => (
-            <div key={kpi.label} className="bg-white p-5 relative" style={{ borderTop: `3px solid ${kpi.color}` }}>
+            <div key={kpi.label} onClick={() => router.push(kpi.href)} className="bg-white p-5 relative cursor-pointer hover:bg-gray-50 transition-colors" style={{ borderTop: `3px solid ${kpi.color}` }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
-                <Link href={kpi.href} className="text-gray-300 hover:text-enphase-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></Link>
+                <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
               </div>
               <div className="flex items-baseline gap-2 mb-1.5">
                 <span className="text-[32px] font-bold text-gray-900 leading-none">{kpi.value}</span>
