@@ -424,33 +424,31 @@ export default function Dashboard() {
               <h3 className="text-sm font-semibold text-gray-900">Products by Manufacturer</h3>
               <Link href="/manufacturers" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="relative w-[160px] h-[160px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={donutData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={72}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {donutData.map((_, idx) => (
-                        <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => [`${value} SKUs`, '']} />
-                  </PieChart>
-                </ResponsiveContainer>
+            <div className="flex gap-4">
+              <div className="relative flex-shrink-0" style={{ width: 180, height: 180 }}>
+                <PieChart width={180} height={180}>
+                  <Pie
+                    data={donutData}
+                    cx={90}
+                    cy={90}
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {donutData.map((_, idx) => (
+                      <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => [`${value} SKUs`, '']} />
+                </PieChart>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
                   <span className="text-[10px] text-gray-400">Total</span>
                 </div>
               </div>
-              <div className="flex-1 space-y-1.5">
+              <div className="flex-1 space-y-1.5 pt-2">
                 {donutData.map((d, i) => (
                   <div key={d.name} className="flex items-center justify-between text-[12px]">
                     <div className="flex items-center gap-2">
