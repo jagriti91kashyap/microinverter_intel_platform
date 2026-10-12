@@ -98,13 +98,13 @@ function ChangesContent() {
   }, [allRevisions, typeFilter, mfgFilter, quarterFilter, monthFilter, regionFilter, countryFilter]);
 
   const stats = useMemo(() => ({
-    newProducts: allRevisions.filter(e => e.type === 'NEW_PRODUCT').length,
-    specChanges: allRevisions.filter(e => e.type === 'SPEC_CHANGE').length,
-    datasheetRevisions: allRevisions.filter(e => e.type === 'DATASHEET_REVISION').length,
-    warrantyUpdates: allRevisions.filter(e => e.type === 'WARRANTY_UPDATE').length,
-    priceChanges: allRevisions.filter(e => e.type === 'PRICE_CHANGE').length,
-    discontinuations: allRevisions.filter(e => e.type === 'DISCONTINUATION').length,
-  }), [allRevisions]);
+    newProducts: filtered.filter(e => e.type === 'NEW_PRODUCT').length,
+    specChanges: filtered.filter(e => e.type === 'SPEC_CHANGE').length,
+    datasheetRevisions: filtered.filter(e => e.type === 'DATASHEET_REVISION').length,
+    warrantyUpdates: filtered.filter(e => e.type === 'WARRANTY_UPDATE').length,
+    priceChanges: filtered.filter(e => e.type === 'PRICE_CHANGE').length,
+    discontinuations: filtered.filter(e => e.type === 'DISCONTINUATION').length,
+  }), [filtered]);
 
   const allMfgs = [...new Set(allRevisions.map(e => e.manufacturer))].sort();
 
@@ -163,27 +163,6 @@ function ChangesContent() {
 
       <div className="px-8 py-8 space-y-5">
 
-      {/* Stats row */}
-      <div className="grid gap-4 grid-cols-6">
-        {([
-          { label: 'New Products', count: stats.newProducts, type: 'NEW_PRODUCT', iconColor: 'text-green-500', countColor: 'text-green-700' },
-          { label: 'Spec Changes', count: stats.specChanges, type: 'SPEC_CHANGE', iconColor: 'text-blue-500', countColor: 'text-blue-700' },
-          { label: 'Datasheet Rev.', count: stats.datasheetRevisions, type: 'DATASHEET_REVISION', iconColor: 'text-purple-500', countColor: 'text-purple-700' },
-          { label: 'Warranty', count: stats.warrantyUpdates, type: 'WARRANTY_UPDATE', iconColor: 'text-yellow-500', countColor: 'text-yellow-700' },
-          { label: 'Price Changes', count: stats.priceChanges, type: 'PRICE_CHANGE', iconColor: 'text-orange-500', countColor: 'text-orange-700' },
-          { label: 'Discontinued', count: stats.discontinuations, type: 'DISCONTINUATION', iconColor: 'text-red-500', countColor: 'text-red-700' },
-        ] as const).map(s => {
-          const Icon = typeIcons[s.type];
-          const active = typeFilter === s.type;
-          return (
-            <button key={s.type} onClick={() => setTypeFilter(active ? '' : s.type)} className={`p-3 rounded-xl text-left transition-all border-l-4 border border-gray-300 ${active ? 'border-l-enphase-500 bg-enphase-50/50' : s.type === 'NEW_PRODUCT' ? 'border-l-green-500 bg-white hover:shadow-md' : s.type === 'SPEC_CHANGE' ? 'border-l-blue-500 bg-white hover:shadow-md' : s.type === 'DATASHEET_REVISION' ? 'border-l-purple-500 bg-white hover:shadow-md' : s.type === 'WARRANTY_UPDATE' ? 'border-l-yellow-500 bg-white hover:shadow-md' : s.type === 'PRICE_CHANGE' ? 'border-l-orange-500 bg-white hover:shadow-md' : 'border-l-red-500 bg-white hover:shadow-md'}`}>
-              <div className="flex items-center gap-2 mb-1"><Icon className={`w-3.5 h-3.5 ${s.iconColor}`} /><span className="text-xs font-medium text-gray-500">{s.label}</span></div>
-              <div className={`text-xl font-semibold ${s.countColor}`}>{s.count}</div>
-            </button>
-          );
-        })}
-      </div>
-
       {/* Filters — grouped into two compact rows to reduce scan fatigue */}
       <div className="p-4 bg-white rounded-xl border border-gray-300 border-l-4 border-l-blue-400 space-y-2.5">
         {/* Row 1: Time + Type + Manufacturer */}
@@ -226,6 +205,27 @@ function ChangesContent() {
             {allCountries.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid gap-4 grid-cols-6">
+        {([
+          { label: 'New Products', count: stats.newProducts, type: 'NEW_PRODUCT', iconColor: 'text-green-500', countColor: 'text-green-700' },
+          { label: 'Spec Changes', count: stats.specChanges, type: 'SPEC_CHANGE', iconColor: 'text-blue-500', countColor: 'text-blue-700' },
+          { label: 'Datasheet Rev.', count: stats.datasheetRevisions, type: 'DATASHEET_REVISION', iconColor: 'text-purple-500', countColor: 'text-purple-700' },
+          { label: 'Warranty', count: stats.warrantyUpdates, type: 'WARRANTY_UPDATE', iconColor: 'text-yellow-500', countColor: 'text-yellow-700' },
+          { label: 'Price Changes', count: stats.priceChanges, type: 'PRICE_CHANGE', iconColor: 'text-orange-500', countColor: 'text-orange-700' },
+          { label: 'Discontinued', count: stats.discontinuations, type: 'DISCONTINUATION', iconColor: 'text-red-500', countColor: 'text-red-700' },
+        ] as const).map(s => {
+          const Icon = typeIcons[s.type];
+          const active = typeFilter === s.type;
+          return (
+            <button key={s.type} onClick={() => setTypeFilter(active ? '' : s.type)} className={`p-3 rounded-xl text-left transition-all border-l-4 border border-gray-300 ${active ? 'border-l-enphase-500 bg-enphase-50/50' : s.type === 'NEW_PRODUCT' ? 'border-l-green-500 bg-white hover:shadow-md' : s.type === 'SPEC_CHANGE' ? 'border-l-blue-500 bg-white hover:shadow-md' : s.type === 'DATASHEET_REVISION' ? 'border-l-purple-500 bg-white hover:shadow-md' : s.type === 'WARRANTY_UPDATE' ? 'border-l-yellow-500 bg-white hover:shadow-md' : s.type === 'PRICE_CHANGE' ? 'border-l-orange-500 bg-white hover:shadow-md' : 'border-l-red-500 bg-white hover:shadow-md'}`}>
+              <div className="flex items-center gap-2 mb-1"><Icon className={`w-3.5 h-3.5 ${s.iconColor}`} /><span className="text-xs font-medium text-gray-500">{s.label}</span></div>
+              <div className={`text-xl font-semibold ${s.countColor}`}>{s.count}</div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Table */}
