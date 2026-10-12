@@ -80,6 +80,7 @@ function SignInContent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        style={{ pointerEvents: 'auto' as const }}
         className="max-w-md w-full"
       >
         {/* Logo and Brand */}
@@ -147,6 +148,7 @@ function SignInContent() {
                     onClick={handleRetry}
                     disabled={isLoading}
                     className="py-2.5 px-6 enphase-gradient text-white text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-enphase-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
+                    style={{ pointerEvents: 'auto' as const }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

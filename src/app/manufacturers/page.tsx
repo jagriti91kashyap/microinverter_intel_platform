@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { manufacturers, products, countries } from '@/data/comprehensive-data';
 import { Card } from '@/components/ui/card';
 import { ManufacturerMap } from '@/components/maps/manufacturer-map';
-import { ChevronDown, ChevronUp, Map, Zap } from 'lucide-react';
+import { ChevronDown, ChevronUp, Map, Zap, ExternalLink } from 'lucide-react';
 
 const MFR_COLORS: Record<string, string> = {
   'Enphase Energy': 'bg-enphase-500',
@@ -26,7 +26,6 @@ function getMfrColor(name: string) {
 }
 
 export default function ManufacturersPage() {
-  const router = useRouter();
   const [expandedMap, setExpandedMap] = useState<string | null>(null);
   const [mfrFilters, setMfrFilters] = useState<Record<string, { productType: string; series: string }>>({});
 
@@ -136,6 +135,15 @@ export default function ManufacturersPage() {
                       <div className="text-sm font-medium text-green-600">{m.activeCount}</div>
                       <div className="text-xs text-gray-400">Active</div>
                     </div>
+
+                    {/* Detail page link */}
+                    <Link
+                      href={`/manufacturers/${m.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-enphase-300 hover:text-enphase-600 transition-all"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />Details
+                    </Link>
 
                     {/* Map toggle */}
                     <button

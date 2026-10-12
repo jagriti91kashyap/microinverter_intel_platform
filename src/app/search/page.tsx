@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,17 @@ export default function SearchPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const blurTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Read URL params for deep-linking from dashboard KPI cards
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mfg = params.get('manufacturer');
+    if (mfg) setMfgFilter(mfg);
+    const q = params.get('q') || params.get('query');
+    if (q) setQuery(q);
+    const region = params.get('region');
+    if (region) setSelectedRegion(region);
+  }, []);
 
   const regionNames = useMemo(() => Object.keys(regions).sort(), []);
 
@@ -224,11 +235,9 @@ export default function SearchPage() {
           <Filter className="w-4 h-4 mr-1.5" />More Filters
           {activeFilterCount > 0 && <span className="ml-1.5 w-4 h-4 bg-enphase-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold flex-shrink-0">{activeFilterCount}</span>}
         </Button>
-        <Link href={compareIds.size > 0 ? compareUrl : '/compare'}>
-          <Button variant="outline" size="sm" className="border-enphase-300 text-enphase-600 hover:bg-enphase-50">
+        <Link href={compareIds.size > 0 ? compareUrl : '/compare'} className="inline-flex items-center justify-center rounded-md border border-enphase-300 text-enphase-600 hover:bg-enphase-50 px-3 h-9 text-sm font-medium">
             <Scale className="w-4 h-4 mr-1.5" />Compare
             {compareIds.size > 0 && <span className="ml-1.5 w-4 h-4 bg-enphase-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold flex-shrink-0">{compareIds.size}</span>}
-          </Button>
         </Link>
         <Button size="sm" onClick={exportCSV} className="bg-enphase-500 hover:bg-enphase-600 text-white"><Download className="w-4 h-4 mr-1" />Export</Button>
       </div>

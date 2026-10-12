@@ -32,7 +32,7 @@ export default function PipelinePage() {
   }), []);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ pointerEvents: 'auto' as const }} className="min-h-screen bg-white">
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
         <p className="text-[11px] font-semibold text-enphase-500 tracking-wider mb-3">AUTOMATED DATA COLLECTION</p>
         <h1 className="text-[32px] font-semibold text-gray-900 tracking-tight">AI Pipeline</h1>
