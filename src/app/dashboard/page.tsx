@@ -120,7 +120,20 @@ export default function Dashboard() {
     const competitorAvgEff = competitorMIs.length > 0
       ? competitorMIs.reduce((s, p) => s + p.efficiency, 0) / competitorMIs.length
       : 0;
-    const competitorMaxPower = Math.max(...competitorMIs.map(p => perModule(p)), 0);
+    
+    // Calculate per-module power for each competitor MI
+    const competitorPowers = competitorMIs.map(p => ({
+      name: p.name,
+      acPower: p.acPower,
+      perModule: perModule(p),
+      product: p
+    }));
+    const competitorMaxPowerObj = competitorPowers.reduce((max, curr) => 
+      curr.perModule > max.perModule ? curr : max, 
+      { name: '', acPower: 0, perModule: 0, product: null }
+    );
+    const competitorMaxPower = competitorMaxPowerObj.perModule;
+    
     const competitorAvgWarranty = competitorMIs.length > 0
       ? competitorMIs.reduce((s, p) => s + p.warranty, 0) / competitorMIs.length
       : 0;
@@ -156,6 +169,7 @@ export default function Dashboard() {
       competitorAvgEff, competitorMaxPower, competitorAvgWarranty,
       topCompetitors, mostActiveMfr, chineseShare, chineseProductCount,
       competitorOnlyCountries, competitorMICount: competitorMIs.length,
+      competitorMaxPowerProduct: competitorMaxPowerObj.name,
     };
   }, [enphaseProducts, competitorProducts, recentEvents, manufacturers, baseProducts]);
 
@@ -373,7 +387,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-4 gap-[1px] bg-gray-200 rounded-xl overflow-hidden">
           {[
             { label: 'Enphase Efficiency', value: `${executiveSummary.enphaseAvgEff.toFixed(1)}%`, sub: `vs ${executiveSummary.competitorAvgEff.toFixed(1)}% competitor avg`, color: '#10B981', href: '/compare', trend: executiveSummary.enphaseAvgEff >= executiveSummary.competitorAvgEff ? 'up' as const : 'down' as const },
-            { label: 'Max Power / Module', value: `${executiveSummary.enphaseMaxPower}W`, sub: `vs ${executiveSummary.competitorMaxPower}W competitor max`, color: '#8B5CF6', href: '/compare', trend: executiveSummary.enphaseMaxPower >= executiveSummary.competitorMaxPower ? 'up' as const : 'down' as const },
+            { label: 'Max Power / Module', value: `${executiveSummary.enphaseMaxPower}W`, sub: `vs ${executiveSummary.competitorMaxPower}W (${executiveSummary.competitorMaxPowerProduct})`, color: '#8B5CF6', href: '/compare', trend: executiveSummary.enphaseMaxPower >= executiveSummary.competitorMaxPower ? 'up' as const : 'down' as const },
             { label: 'Warranty (avg)', value: `${executiveSummary.enphaseAvgWarranty.toFixed(0)} yrs`, sub: `vs ${executiveSummary.competitorAvgWarranty.toFixed(0)} yrs competitor avg`, color: '#F59E0B', href: '/search', trend: executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty ? 'up' as const : null },
             { label: 'Spec Changes (30d)', value: recentSpecChanges.length, sub: `${directCompetitorChanges.length} from US competitors`, color: '#EF4444', href: '/changes', trend: recentSpecChanges.length > 5 ? 'up' as const : null },
           ].map((kpi) => (
