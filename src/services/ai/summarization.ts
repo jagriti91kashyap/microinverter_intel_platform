@@ -63,7 +63,7 @@ export class AISummarizationService {
 
       return completion.choices[0]?.message?.content?.trim() || '';
     } catch (error) {
-      console.error('Product summary generation error:', error);
+      // Error('Product summary generation error:', error);
       throw new Error(`Failed to generate product summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -99,7 +99,7 @@ export class AISummarizationService {
 
       return this.parseMarketInsightsResponse(response);
     } catch (error) {
-      console.error('Market insights generation error:', error);
+      // Error('Market insights generation error:', error);
       throw new Error(`Failed to generate market insights: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -135,7 +135,7 @@ export class AISummarizationService {
 
       return this.parseComparisonResponse(response);
     } catch (error) {
-      console.error('Comparison summary generation error:', error);
+      // Error('Comparison summary generation error:', error);
       throw new Error(`Failed to generate comparison summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -162,7 +162,7 @@ export class AISummarizationService {
 
       return completion.choices[0]?.message?.content?.trim() || '';
     } catch (error) {
-      console.error('Change summary generation error:', error);
+      // Error('Change summary generation error:', error);
       throw new Error(`Failed to generate change summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -198,7 +198,7 @@ export class AISummarizationService {
 
       return this.parseManufacturerOverviewResponse(response);
     } catch (error) {
-      console.error('Manufacturer overview generation error:', error);
+      // Error('Manufacturer overview generation error:', error);
       throw new Error(`Failed to generate manufacturer overview: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

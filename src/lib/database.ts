@@ -236,7 +236,7 @@ export async function checkDatabaseHealth(): Promise<boolean> {
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
-    console.error('Database health check failed:', error);
+    // Error('Database health check failed:', error);
     return false;
   }
 }
@@ -260,7 +260,7 @@ export async function initializeDatabase() {
     
     console.log('✅ Database initialized successfully');
   } catch (error) {
-    console.error('❌ Database initialization failed:', error);
+    // Error('❌ Database initialization failed:', error);
     throw error;
   }
 }

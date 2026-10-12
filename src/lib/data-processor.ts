@@ -67,7 +67,7 @@ export class DataProcessorService {
           } catch (error) {
             const errorMessage = `Error processing product ${scrapedProduct.name}: ${error}`
             results.errors.push(errorMessage)
-            console.error(errorMessage)
+            // Error(errorMessage)
           }
         }
 
@@ -90,7 +90,7 @@ export class DataProcessorService {
     } catch (error) {
       results.success = false
       results.errors.push(`Failed to create crawl job: ${error}`)
-      console.error('Error in manufacturer ingestion:', error)
+      // Error('Error in manufacturer ingestion:', error)
     }
 
     return results
@@ -135,7 +135,7 @@ export class DataProcessorService {
         return { created: true, updated: false, product: newProduct }
       }
     } catch (error) {
-      console.error('Error processing scraped product:', error)
+      // Error('Error processing scraped product:', error)
       throw error
     }
   }
@@ -192,7 +192,7 @@ export class DataProcessorService {
 
       return product
     } catch (error) {
-      console.error('Error creating new product:', error)
+      // Error('Error creating new product:', error)
       throw error
     }
   }
@@ -244,7 +244,7 @@ export class DataProcessorService {
 
       return product
     } catch (error) {
-      console.error('Error updating existing product:', error)
+      // Error('Error updating existing product:', error)
       throw error
     }
   }
@@ -523,7 +523,7 @@ export class DataProcessorService {
         recommendations
       }
     } catch (error) {
-      console.error('Error validating data quality:', error)
+      // Error('Error validating data quality:', error)
       return {
         score: 0,
         issues: ['Unable to validate data quality'],

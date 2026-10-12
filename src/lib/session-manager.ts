@@ -45,7 +45,7 @@ export async function validateServerSession(request: NextRequest): Promise<{
 
     return { user }
   } catch (error) {
-    console.error('Session validation error:', error)
+    // Error('Session validation error:', error)
     return { 
       user: null, 
       error: 'Session validation failed', 

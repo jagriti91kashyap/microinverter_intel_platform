@@ -79,7 +79,7 @@ async function extractFromWeb(req: NextRequest) {
         const webResults = await aiExtractionService.extractFromWebSearch(manufacturer, productName);
         results = webResults;
       } catch (webError) {
-        console.error('Web extraction failed:', webError);
+        // Error('Web extraction failed:', webError);
         // Continue with empty results if web search fails
       }
     }
@@ -94,7 +94,7 @@ async function extractFromWeb(req: NextRequest) {
           specifications: results[0].specifications
         });
       } catch (summaryError) {
-        console.error('Summary generation failed:', summaryError);
+        // Error('Summary generation failed:', summaryError);
       }
     }
 
@@ -114,7 +114,7 @@ async function extractFromWeb(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Web extraction API error:', error);
+    // Error('Web extraction API error:', error);
     return NextResponse.json(
       { error: 'Failed to extract from web' },
       { status: 500 }

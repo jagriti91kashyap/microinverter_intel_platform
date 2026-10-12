@@ -48,7 +48,7 @@ export class AIExtractorService {
         sourceData: scrapedProduct
       }
     } catch (error) {
-      console.error('Error extracting product data:', error)
+      // Error('Error extracting product data:', error)
       throw error
     }
   }
@@ -186,7 +186,7 @@ export class AIExtractorService {
       
       return summary
     } catch (error) {
-      console.error('Error generating AI summary:', error)
+      // Error('Error generating AI summary:', error)
       return `${basicInfo.name} - ${basicInfo.series || ''} ${basicInfo.model || ''}`
     }
   }
@@ -375,7 +375,7 @@ export class AIExtractorService {
         changes
       }
     } catch (error) {
-      console.error('Error comparing with existing product:', error)
+      // Error('Error comparing with existing product:', error)
       return { isDuplicate: false }
     }
   }

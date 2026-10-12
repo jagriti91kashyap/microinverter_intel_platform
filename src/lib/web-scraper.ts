@@ -105,7 +105,7 @@ export class WebScraperService {
 
       return products
     } catch (error) {
-      console.error(`Error scraping manufacturer ${manufacturerId}:`, error)
+      // Error(`Error scraping manufacturer ${manufacturerId}:`, error)
       throw error
     }
   }
@@ -119,7 +119,7 @@ export class WebScraperService {
       // In production, this would use a web scraping library like Puppeteer or Cheerio
       return this.getMockScrapedProducts(config, url)
     } catch (error) {
-      console.error(`Error scraping page ${pagePath}:`, error)
+      // Error(`Error scraping page ${pagePath}:`, error)
       return []
     }
   }

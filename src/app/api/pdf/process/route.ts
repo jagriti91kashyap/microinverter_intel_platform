@@ -115,7 +115,7 @@ async function processPDF(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('PDF processing API error:', error);
+    // Error('PDF processing API error:', error);
     return NextResponse.json(
       { error: 'Failed to process PDF' },
       { status: 500 }
@@ -147,7 +147,7 @@ async function getPDFInfo(req: NextRequest) {
     return NextResponse.json(info);
 
   } catch (error) {
-    console.error('Get PDF info API error:', error);
+    // Error('Get PDF info API error:', error);
     return NextResponse.json(
       { error: 'Failed to get PDF info' },
       { status: 500 }
@@ -160,7 +160,7 @@ async function getStorageStats(req: NextRequest) {
     const stats = await pdfProcessingService.getStorageStats();
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('Get storage stats API error:', error);
+    // Error('Get storage stats API error:', error);
     return NextResponse.json(
       { error: 'Failed to get storage stats' },
       { status: 500 }
@@ -181,7 +181,7 @@ async function cleanupOldFiles(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Cleanup API error:', error);
+    // Error('Cleanup API error:', error);
     return NextResponse.json(
       { error: 'Failed to cleanup files' },
       { status: 500 }

@@ -105,14 +105,14 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json(analytics)
     } catch (dbError) {
-      console.error('Database error, falling back to mock analytics:', dbError)
+      // Error('Database error, falling back to mock analytics:', dbError)
       
       // Fallback to comprehensive mock analytics
       const mockAnalytics = generateMockAnalytics(validatedParams)
       return NextResponse.json(mockAnalytics)
     }
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    // Error('Error fetching analytics:', error)
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

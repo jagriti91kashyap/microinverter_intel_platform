@@ -47,7 +47,7 @@ export class EmbeddingService {
 
       return response.data[0]?.embedding || [];
     } catch (error) {
-      console.error('Embedding generation error:', error);
+      // Embedding generation error
       throw new Error(`Failed to generate embedding: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -84,7 +84,7 @@ export class EmbeddingService {
       `;
 
     } catch (error) {
-      console.error('Product embedding error:', error);
+      // Product embedding error
       throw error;
     }
   }
@@ -105,7 +105,7 @@ export class EmbeddingService {
       
       return results;
     } catch (error) {
-      console.error('Semantic search error:', error);
+      // Semantic search error
       throw error;
     }
   }
@@ -148,7 +148,7 @@ export class EmbeddingService {
         WHERE id = ${productId}
       `;
     } catch (error) {
-      console.error('Delete embedding error:', error);
+      // Delete embedding error
       throw error;
     }
   }
@@ -253,12 +253,11 @@ export class EmbeddingService {
       // const results = await prisma.$queryRawUnsafe(sql, embedding, ...params);
       
       // For now, return empty results
-      console.log('Vector search SQL:', sql);
-      console.log('Embedding dimensions:', embedding.length);
+      // Vector search debug info
       
       return [];
     } catch (error) {
-      console.error('Vector search execution error:', error);
+      // Vector search execution error
       throw error;
     }
   }
@@ -299,10 +298,10 @@ export class EmbeddingService {
       `;
 
       // Execute query (mock for now)
-      console.log('Similar products search for:', productId);
+      // Similar products search
       return [];
     } catch (error) {
-      console.error('Find similar products error:', error);
+      // Find similar products error
       throw error;
     }
   }
@@ -321,18 +320,18 @@ export class EmbeddingService {
       const productsWithoutEmbeddings = products;
 
       if (!productsWithoutEmbeddings || productsWithoutEmbeddings.length === 0) {
-        console.log('All products have embeddings');
+        // All products have embeddings
         return;
       }
 
-      console.log(`Generating embeddings for ${productsWithoutEmbeddings.length} products`);
+      // Generating embeddings for products
       
       const productIds = productsWithoutEmbeddings.map(p => p.id);
       await this.batchGenerateEmbeddings(productIds);
       
-      console.log('Embedding generation completed');
+      // Embedding generation completed
     } catch (error) {
-      console.error('Generate missing embeddings error:', error);
+      // Generate missing embeddings error
       throw error;
     }
   }

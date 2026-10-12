@@ -67,7 +67,7 @@ export class SerpAPIService {
       }));
 
     } catch (error) {
-      console.error('SerpAPI search error:', error);
+      // Error('SerpAPI search error:', error);
       throw new Error(`Web search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -109,7 +109,7 @@ export class SerpAPIService {
       await this.search('test query', { num: 1 });
       return true;
     } catch (error) {
-      console.error('SerpAPI validation failed:', error);
+      // Error('SerpAPI validation failed:', error);
       return false;
     }
   }
@@ -174,7 +174,7 @@ export function createSearchService(config?: SerpAPIConfig) {
   if (config?.apiKey && config.apiKey !== 'mock') {
     return new SerpAPIService(config);
   } else {
-    console.log('Using mock search service - set SERPAPI_KEY for real search results');
+    // Log('Using mock search service - set SERPAPI_KEY for real search results');
     return new MockSerpAPIService();
   }
 }

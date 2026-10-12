@@ -32,10 +32,10 @@ const searchService = createSearchService();
 export async function searchWeb(query: string): Promise<WebSearchResult[]> {
   try {
     const results = await searchService.search(query);
-    console.log(`Web search query: "${query}" - Found ${results.length} results`);
+    // Log(`Web search query: "${query}" - Found ${results.length} results`);
     return results;
   } catch (error) {
-    console.error('Web search failed:', error);
+    // Error('Web search failed:', error);
     return [];
   }
 }
@@ -82,7 +82,7 @@ export async function searchMarketProducts(
         }
       }
     } catch (error) {
-      console.error(`Failed to search for "${query}":`, error);
+      // Error(`Failed to search for "${query}":`, error);
     }
   }
   

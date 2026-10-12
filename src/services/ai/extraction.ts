@@ -733,4 +733,3 @@ Instructions:
 }
 
 export const aiExtractionService = new AIExtractionService();
-                         

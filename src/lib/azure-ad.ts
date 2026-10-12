@@ -117,7 +117,7 @@ export async function exchangeCodeForTokens(code: string, state?: string) {
     const response = await getMsalClient().acquireTokenByCode(tokenRequest);
     return response;
   } catch (error) {
-    console.error('Error exchanging code for tokens:', error);
+    // Error('Error exchanging code for tokens:', error);
     throw new Error('Failed to exchange authorization code for tokens');
   }
 }
@@ -184,7 +184,7 @@ async function fetchUserGroups(userObjectId: string, accessToken: string): Promi
     const data = await response.json();
     return data.value?.map((group: any) => group.displayName) || [];
   } catch (error) {
-    console.error('Error fetching user groups:', error);
+    // Error('Error fetching user groups:', error);
     return [];
   }
 }
@@ -225,7 +225,7 @@ export async function createOrUpdateUser(azureUser: AzureADUser): Promise<any> {
       return newUser;
     }
   } catch (error) {
-    console.error('Error creating/updating user:', error);
+    // Error('Error creating/updating user:', error);
     throw new Error('Failed to create or update user');
   }
 }

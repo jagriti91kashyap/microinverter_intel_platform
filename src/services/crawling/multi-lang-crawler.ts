@@ -102,7 +102,7 @@ export class MultiLangCrawlerService {
         }
       }
     } catch (error) {
-      console.error('Error discovering regional URLs:', error);
+      // Error discovering regional URLs
     }
 
     return urls;
@@ -151,7 +151,7 @@ export class MultiLangCrawlerService {
       });
       return response.choices[0]?.message?.content?.trim() || text;
     } catch (error) {
-      console.error('Translation error:', error);
+      // Translation error
       return text;
     }
   }
@@ -233,7 +233,7 @@ export class MultiLangCrawlerService {
         regionalVariants,
       };
     } catch (error) {
-      console.error('Error extracting localized product:', error);
+      // Error extracting localized product
       return null;
     }
   }
