@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,8 +60,11 @@ const toSourceUrl = (source: string) => {
 const typeLabel = (t: string) => t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Datasheet Revision', 'Datasheet Rev.');
 
 function ChangesContent() {
-  const searchParams = useSearchParams();
-  const highlightId = searchParams.get('highlight') || '';
+  const [highlightId, setHighlightId] = useState('');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setHighlightId(params.get('highlight') || '');
+  }, []);
 
   const [typeFilter, setTypeFilter] = useState('');
   const [mfgFilter, setMfgFilter] = useState('');
@@ -148,7 +150,7 @@ function ChangesContent() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white" style={{ pointerEvents: 'auto' as const }}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
         <div className="flex items-center justify-between">
@@ -299,9 +301,5 @@ function ChangesContent() {
 }
 
 export default function ChangesPage() {
-  return (
-    <Suspense>
-      <ChangesContent />
-    </Suspense>
-  );
+  return <ChangesContent />;
 }

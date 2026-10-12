@@ -1,11 +1,10 @@
 'use client';
 
-import React, { Suspense, useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useSearchParams } from 'next/navigation';
 import { Plus, X, Download, Share2, ExternalLink, Package, Search, Globe, MapPin, ChevronLeft, ChevronRight, Check, ShieldCheck, FileText, Zap, BookmarkPlus, Bookmark, Trash2, Clock, FolderOpen, GripVertical } from 'lucide-react';
 import { products, countries as allCountries, regions as allRegions } from '@/data/comprehensive-data';
 import type { Product, RegionalVariant } from '@/data/comprehensive-data';
@@ -162,37 +161,27 @@ function groupCountriesByRegion(countries: string[]): Record<string, string[]> {
 }
 
 export default function ComparePage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading...</div>}>
-      <ComparePageContent />
-    </Suspense>
-  );
-}
-
-function ComparePageContent() {
-  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<Product[]>([]);
 
   useEffect(() => {
-    const ids = searchParams.get('ids');
+    const params = new URLSearchParams(window.location.search);
+    const ids = params.get('ids');
     if (!ids) return;
     const idList = ids.split(',').filter(Boolean);
-    // Support region-suffixed IDs like "29-na", "82-eu-nl", "10-eu" — extract base numeric ID
     const seen = new Set<string>();
     const preSelected = idList
       .map(raw => {
-        const baseId = raw.replace(/-.*$/, ''); // "29-na" → "29", "82-eu-nl" → "82"
+        const baseId = raw.replace(/-.*$/, '');
         return products.find(p => p.id === baseId) || products.find(p => p.id === raw);
       })
       .filter((p): p is Product => {
         if (!p) return false;
-        // Allow same product to appear only once even if listed with different region suffixes
         if (seen.has(p.id)) return false;
         seen.add(p.id);
         return true;
       });
     if (preSelected.length > 0) setSelected(preSelected);
-  }, [searchParams]);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightDiff, setHighlightDiff] = useState(true);
@@ -508,7 +497,7 @@ function ComparePageContent() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white" style={{ pointerEvents: 'auto' as const }}>
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>

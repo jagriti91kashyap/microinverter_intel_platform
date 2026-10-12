@@ -127,7 +127,7 @@ export default function SearchPage() {
   const totalManufacturers = manufacturers.length;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-white" style={{ pointerEvents: 'auto' as const }}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
         <p className="text-[11px] font-semibold text-enphase-500 tracking-wider mb-3">ALL MANUFACTURERS · {totalCountries} COUNTRIES</p>
