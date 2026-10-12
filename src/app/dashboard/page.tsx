@@ -363,14 +363,14 @@ export default function Dashboard() {
       {/* ═══ SALESFORCE-STYLE KPI GRID — 2 rows of metric cards ═══ */}
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ pointerEvents: 'auto' }}>
         {/* Row 1 */}
-        <div className="grid grid-cols-4 gap-[1px] bg-gray-200 rounded-xl overflow-hidden mb-[1px]">
+        <div className="grid grid-cols-4 gap-4">
           {[
             { label: 'Products Tracked', value: totalProducts, sub: `${manufacturers.length} manufacturers`, color: '#8B5CF6', href: '/search', trend: null },
             { label: 'Enphase Active SKUs', value: enphaseActiveCount, sub: `IQ7 · IQ8 · IQ9 series`, color: '#FF6900', href: '/search?manufacturer=Enphase+Energy', trend: 'up' as const },
             { label: 'Competitor Launches (30d)', value: competitorLaunches.length, sub: competitorMfgNames.slice(0, 3).join(', ') || 'None', color: '#F59E0B', href: '/changes', trend: competitorLaunches.length > 3 ? 'up' : null },
             { label: 'Market Reach', value: executiveSummary.enphaseCountries, sub: 'countries with Enphase presence', color: '#3B82F6', href: '/manufacturers', trend: 'up' as const },
           ].map((kpi) => (
-            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white p-5 relative cursor-pointer hover:bg-gray-50 transition-colors group" style={{ borderTop: `5px solid ${kpi.color}`, borderLeft: `5px solid ${kpi.color}`, pointerEvents: 'auto' }}>
+            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-md transition-all group border-t-4" style={{ borderTopColor: kpi.color, pointerEvents: 'auto' }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
                 <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
@@ -384,14 +384,14 @@ export default function Dashboard() {
           ))}
         </div>
         {/* Row 2 */}
-        <div className="grid grid-cols-4 gap-[1px] bg-gray-200 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-4 gap-4">
           {[
             { label: 'Enphase Efficiency', value: `${executiveSummary.enphaseAvgEff.toFixed(1)}%`, sub: `vs ${executiveSummary.competitorAvgEff.toFixed(1)}% competitor avg`, color: '#10B981', href: '/compare', trend: executiveSummary.enphaseAvgEff >= executiveSummary.competitorAvgEff ? 'up' as const : 'down' as const },
             { label: 'Max Power / Module', value: `${executiveSummary.enphaseMaxPower}W`, sub: `vs ${executiveSummary.competitorMaxPower}W (${executiveSummary.competitorMaxPowerProduct})`, color: '#8B5CF6', href: '/compare', trend: executiveSummary.enphaseMaxPower >= executiveSummary.competitorMaxPower ? 'up' as const : 'down' as const },
             { label: 'Warranty (avg)', value: `${executiveSummary.enphaseAvgWarranty.toFixed(0)} yrs`, sub: `vs ${executiveSummary.competitorAvgWarranty.toFixed(0)} yrs competitor avg`, color: '#F59E0B', href: '/search', trend: executiveSummary.enphaseAvgWarranty >= executiveSummary.competitorAvgWarranty ? 'up' as const : null },
             { label: 'Spec Changes (30d)', value: recentSpecChanges.length, sub: `${directCompetitorChanges.length} from US competitors`, color: '#EF4444', href: '/changes', trend: recentSpecChanges.length > 5 ? 'up' as const : null },
           ].map((kpi) => (
-            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white p-5 relative cursor-pointer hover:bg-gray-50 transition-colors group" style={{ borderTop: `5px solid ${kpi.color}`, borderLeft: `5px solid ${kpi.color}`, pointerEvents: 'auto' }}>
+            <div key={kpi.label} onClick={() => { console.log('KPI clicked:', kpi.href); router.push(kpi.href); }} className="bg-white rounded-lg p-5 relative cursor-pointer hover:shadow-md transition-all group border-t-4" style={{ borderTopColor: kpi.color, pointerEvents: 'auto' }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{kpi.label}</span>
                 <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-enphase-500 transition-colors" />
