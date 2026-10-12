@@ -4,6 +4,13 @@ import { aiExtractionService } from '@/services/ai/extraction';
 import { db } from '@/lib/prisma';
 import { ChangeType } from '@prisma/client';
 
+/**
+ * @typedef {Object} DetectChangesRequest
+ * @property {string} productId - Product ID to check (required)
+ * @property {Array} [newSpecifications] - New specifications to compare
+ * @property {string} [newContent] - New product content/description
+ * @property {string} [sourceUrl] - Source URL for change detection
+ */
 interface DetectChangesRequest {
   productId: string;
   newSpecifications?: Array<{
@@ -16,6 +23,57 @@ interface DetectChangesRequest {
   sourceUrl?: string;
 }
 
+/**
+ * POST /api/changes/detect
+ * 
+ * Detect and log changes to product specifications.
+ * Compares new specifications against current data and creates change events.
+ * 
+ * @param {NextRequest} req - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with detected changes (200 OK)
+ * 
+ * @example
+ * // Request
+ * POST /api/changes/detect
+ * Content-Type: application/json
+ * Authorization: Bearer <session_token>
+ * 
+ * {
+ *   "productId": "1",
+ *   "newSpecifications": [
+ *     { "category": "Electrical", "name": "AC Power", "value": "350", "unit": "W" }
+ *   ],
+ *   "sourceUrl": "https://enphase.com/products/iq8"
+ * }
+ * 
+ * // Response (200 OK)
+ * {
+ *   "success": true,
+ *   "productId": "1",
+ *   "changesDetected": true,
+ *   "changes": [
+ *     {
+ *       "type": "SPEC_CHANGE",
+ *       "field": "AC Power",
+ *       "oldValue": "345",
+ *       "newValue": "350",
+ *       "changeType": "SPECIFICATION_UPDATE"
+ *     }
+ *   ],
+ *   "changeEventId": "event-123",
+ *   "detectedAt": "2026-10-15T10:30:00Z"
+ * }
+ * 
+ * @body {string} productId - Product ID (required)
+ * @body {Array} [newSpecifications] - New specifications to compare
+ * @body {string} [newContent] - New product content
+ * @body {string} [sourceUrl] - Source URL
+ * 
+ * @throws {400} Bad Request - Missing product ID
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {404} Not Found - Product not found
+ * @throws {500} Internal Server Error - Change detection error
+ */
 async function detectChanges(req: NextRequest) {
   try {
     const body: DetectChangesRequest = await req.json();

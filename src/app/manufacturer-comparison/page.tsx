@@ -63,7 +63,7 @@ export default function ManufacturerComparisonPage() {
         setProducts(data.items || []);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Error fetching products
     } finally {
       setLoading(false);
     }

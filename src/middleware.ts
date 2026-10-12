@@ -61,19 +61,26 @@ export async function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('X-XSS-Protection', '1; mode=block')
   
-  // Add CORS headers for API routes
+  // Add CORS headers for API routes - restricted to specific domains
   if (pathname.startsWith('/api/')) {
-    response.headers.set('Access-Control-Allow-Origin', '*')
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://microinverterintelplatform-git-main-mbu1.vercel.app',
+      'https://microinverter-platform.vercel.app',
+    ]
+    
+    const origin = request.headers.get('origin')
+    if (origin && allowedOrigins.includes(origin)) {
+      response.headers.set('Access-Control-Allow-Origin', origin)
+    }
+    
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.set('Access-Control-Max-Age', '86400')
   }
 
-  // Log security events
-  if (pathname.startsWith('/api/') && !publicRoutes.some(route => pathname.startsWith(route))) {
-    if (!token) {
-      console.warn(`Unauthorized API access attempt: ${pathname} from ${request.ip}`)
-    }
-  }
+  // Security event tracking handled by monitoring system
 
   return response
 }

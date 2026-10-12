@@ -3,6 +3,50 @@ import { withAuth } from '@/lib/middleware';
 import { db } from '@/lib/prisma';
 import { JobStatus } from '@prisma/client';
 
+/**
+ * GET /api/crawl/list
+ * 
+ * List all crawl jobs with optional filtering by status and pagination.
+ * 
+ * @param {NextRequest} req - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with paginated job list (200 OK)
+ * 
+ * @example
+ * // Request
+ * GET /api/crawl/list?status=COMPLETED&limit=20&offset=0
+ * Authorization: Bearer <session_token>
+ * 
+ * // Response (200 OK)
+ * {
+ *   "jobs": [
+ *     {
+ *       "id": "job-123",
+ *       "url": "https://enphase.com/products/iq8",
+ *       "crawlType": "PRODUCT_PAGE",
+ *       "status": "COMPLETED",
+ *       "priority": 8,
+ *       "pagesProcessed": 5,
+ *       "totalPages": 5,
+ *       "createdAt": "2026-10-15T10:30:00Z",
+ *       "completedAt": "2026-10-15T10:35:00Z"
+ *     }
+ *   ],
+ *   "pagination": {
+ *     "total": 45,
+ *     "limit": 20,
+ *     "offset": 0,
+ *     "hasMore": true
+ *   }
+ * }
+ * 
+ * @query {string} [status] - Filter by job status (QUEUED, RUNNING, COMPLETED, FAILED)
+ * @query {number} [limit=50] - Items per page (max 100)
+ * @query {number} [offset=0] - Pagination offset
+ * 
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {500} Internal Server Error - Database error
+ */
 async function listCrawlJobs(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);

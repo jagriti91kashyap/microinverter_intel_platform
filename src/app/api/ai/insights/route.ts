@@ -3,6 +3,14 @@ import { withAuth } from '@/lib/middleware';
 import { aiSummarizationService } from '@/services/ai/summarization';
 import { db } from '@/lib/prisma';
 
+/**
+ * @typedef {Object} InsightsRequest
+ * @property {string} type - Type of insight (market, manufacturer, comparison, changes)
+ * @property {string} [timeRange] - Time range (week, month, quarter, year)
+ * @property {string} [focusArea] - Focus area (efficiency, power, warranty, new_products)
+ * @property {string} [manufacturerId] - Manufacturer ID for focused insights
+ * @property {string[]} [productIds] - Product IDs for comparison insights
+ */
 interface InsightsRequest {
   type: 'market' | 'manufacturer' | 'comparison' | 'changes';
   timeRange?: 'week' | 'month' | 'quarter' | 'year';
@@ -11,6 +19,50 @@ interface InsightsRequest {
   productIds?: string[];
 }
 
+/**
+ * POST /api/ai/insights
+ * 
+ * Generate AI-powered insights about market trends, manufacturers, and products.
+ * Supports multiple insight types with customizable time ranges and focus areas.
+ * 
+ * @param {NextRequest} req - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with insights (200 OK)
+ * 
+ * @example
+ * // Request
+ * POST /api/ai/insights
+ * Content-Type: application/json
+ * Authorization: Bearer <session_token>
+ * 
+ * {
+ *   "type": "market",
+ *   "timeRange": "month",
+ *   "focusArea": "efficiency"
+ * }
+ * 
+ * // Response (200 OK)
+ * {
+ *   "success": true,
+ *   "type": "market",
+ *   "insights": "Market analysis showing efficiency improvements...",
+ *   "keyFindings": [
+ *     "Average efficiency increased by 2%",
+ *     "New products focus on high-power applications"
+ *   ],
+ *   "confidence": 0.88,
+ *   "generatedAt": "2026-10-15T10:30:00Z"
+ * }
+ * 
+ * @body {string} type - Insight type (required): market, manufacturer, comparison, changes
+ * @body {string} [timeRange] - Time range: week, month, quarter, year
+ * @body {string} [focusArea] - Focus area: efficiency, power, warranty, new_products
+ * @body {string} [manufacturerId] - Manufacturer ID for focused insights
+ * @body {string[]} [productIds] - Product IDs for comparison
+ * 
+ * @throws {400} Bad Request - Missing or invalid insight type
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {500} Internal Server Error - AI service error
+ */
 async function getAIInsights(req: NextRequest) {
   try {
     const body: InsightsRequest = await req.json();

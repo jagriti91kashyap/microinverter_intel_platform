@@ -232,6 +232,11 @@ export async function createOrUpdateUser(azureUser: AzureADUser): Promise<any> {
 
 // Generate application JWT token for authenticated user
 export function generateAppToken(user: any): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET environment variable is not set');
+  }
+
   const payload = {
     userId: user.id,
     email: user.email,
@@ -239,7 +244,7 @@ export function generateAppToken(user: any): string {
     azureId: user.azureId,
   };
 
-  return jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', {
+  return jwt.sign(payload, secret, {
     expiresIn: '7d',
   });
 }
@@ -248,13 +253,18 @@ export function generateAppToken(user: any): string {
 export function requireAuth(handler: Function) {
   return async (req: Request, res: any) => {
     try {
+      const secret = process.env.NEXTAUTH_SECRET;
+      if (!secret) {
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
+
       const authHeader = req.headers.get('authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Missing or invalid authorization header' });
       }
 
       const token = authHeader.substring(7);
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
+      const decoded = jwt.verify(token, secret) as any;
       
       // Attach user to request
       (req as any).user = decoded;

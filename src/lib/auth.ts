@@ -9,13 +9,19 @@ export interface JWTPayload {
 }
 
 export const generateToken = (payload: JWTPayload): string => {
-  const secret = process.env.JWT_SECRET || 'fallback-secret-key-for-development-only';
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET environment variable is not set');
+  }
   return jwt.sign(payload, secret, { expiresIn: '7d' });
 };
 
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    const secret = process.env.JWT_SECRET || 'fallback-secret-key-for-development-only';
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret) {
+      throw new Error('NEXTAUTH_SECRET environment variable is not set');
+    }
     return jwt.verify(token, secret) as JWTPayload;
   } catch (error) {
     return null;

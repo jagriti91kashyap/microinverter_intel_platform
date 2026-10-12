@@ -120,7 +120,7 @@ export async function GET(
 
       return NextResponse.json(product)
     } catch (dbError) {
-      console.error('Database error, falling back to mock data:', dbError)
+      // Database error, falling back to mock data
       
       // Fallback mock data
       const mockProduct = {
@@ -205,7 +205,6 @@ export async function GET(
       return NextResponse.json(mockProduct)
     }
   } catch (error) {
-    console.error('Error fetching product:', error)
     return NextResponse.json(
       { error: 'Failed to fetch product' },
       { status: 500 }
@@ -304,12 +303,11 @@ export async function PUT(
         }
       })
 
-      // Log update
-      console.log(`Product updated: ${product.name} by ${user.email}`)
+      // Product updated
 
       return NextResponse.json(product)
     } catch (dbError) {
-      console.error('Database error during product update:', dbError)
+      // Database error during product update
       
       // Fallback for development
       const mockProduct = {
@@ -325,11 +323,9 @@ export async function PUT(
         createdAt: new Date().toISOString()
       }
 
-      console.log(`Mock product updated: ${mockProduct.name} by ${user.email}`)
       return NextResponse.json(mockProduct)
     }
   } catch (error) {
-    console.error('Error updating product:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -403,12 +399,11 @@ export async function PATCH(
         }
       })
 
-      // Log update
-      console.log(`Product partially updated: ${product.name} by ${user.email}`)
+      // Product partially updated
 
       return NextResponse.json(product)
     } catch (dbError) {
-      console.error('Database error during product partial update:', dbError)
+      // Database error during product partial update
       
       // Fallback for development
       const mockProduct = {
@@ -424,11 +419,9 @@ export async function PATCH(
         createdAt: new Date().toISOString()
       }
 
-      console.log(`Mock product partially updated: ${mockProduct.name} by ${user.email}`)
       return NextResponse.json(mockProduct)
     }
   } catch (error) {
-    console.error('Error partially updating product:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -498,15 +491,14 @@ export async function DELETE(
         }
       })
 
-      // Log deletion
-      console.log(`Product soft deleted: ${product.name} by ${user.email}`)
+      // Product soft deleted
 
       return NextResponse.json({
         message: 'Product marked as discontinued',
         product
       })
     } catch (dbError) {
-      console.error('Database error during product deletion:', dbError)
+      // Database error during product deletion
       
       // Fallback for development
       const mockProduct = {
@@ -523,14 +515,12 @@ export async function DELETE(
         createdAt: new Date().toISOString()
       }
 
-      console.log(`Mock product soft deleted: ${mockProduct.name} by ${user.email}`)
       return NextResponse.json({
         message: 'Product marked as discontinued',
         product: mockProduct
       })
     }
   } catch (error) {
-    console.error('Error deleting product:', error)
     return NextResponse.json(
       { error: 'Failed to delete product' },
       { status: 500 }

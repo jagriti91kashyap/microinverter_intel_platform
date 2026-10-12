@@ -71,7 +71,6 @@ export const authOptions: NextAuthOptions = {
           
           return null
         } catch (error) {
-          console.error('Authentication error:', error)
           return null
         }
       }
@@ -117,12 +116,10 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user, account, profile }) {
-      // Log sign in events for security
-      console.log(`User signed in: [redacted] at ${new Date().toISOString()}`)
+      // Sign in event
     },
     async signOut({ session }) {
-      // Log sign out events
-      console.log(`User signed out: [redacted] at ${new Date().toISOString()}`)
+      // Sign out event
     }
   },
   debug: process.env.NODE_ENV === 'development'

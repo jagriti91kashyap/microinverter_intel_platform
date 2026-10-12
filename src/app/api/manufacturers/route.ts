@@ -14,7 +14,52 @@ const createManufacturerSchema = z.object({
 
 const updateManufacturerSchema = createManufacturerSchema.partial()
 
-// GET /api/manufacturers - List manufacturers with filtering and pagination
+/**
+ * GET /api/manufacturers
+ * 
+ * List all manufacturers with filtering, sorting, and pagination.
+ * Includes product count for each manufacturer.
+ * 
+ * @param {NextRequest} request - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with paginated manufacturer list
+ * 
+ * @example
+ * // Request
+ * GET /api/manufacturers?page=1&pageSize=10&search=Enphase&country=United States
+ * 
+ * // Response (200 OK)
+ * {
+ *   "items": [
+ *     {
+ *       "id": "1",
+ *       "name": "Enphase Energy",
+ *       "website": "https://enphase.com",
+ *       "logoUrl": "https://...",
+ *       "description": "Leading microinverter manufacturer",
+ *       "country": "United States",
+ *       "isActive": true,
+ *       "productCount": 16
+ *     }
+ *   ],
+ *   "total": 21,
+ *   "page": 1,
+ *   "pageSize": 10,
+ *   "totalPages": 3,
+ *   "hasNext": true,
+ *   "hasPrev": false
+ * }
+ * 
+ * @query {number} [page=1] - Page number (1-indexed)
+ * @query {number} [pageSize=10] - Items per page (max 100)
+ * @query {string} [search] - Search query (name, description, country)
+ * @query {boolean} [isActive] - Filter by active status
+ * @query {string} [country] - Filter by country
+ * @query {string} [sortBy=name] - Sort field
+ * @query {string} [sortOrder=asc] - Sort order (asc, desc)
+ * 
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {500} Internal Server Error - Server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -87,7 +132,6 @@ export async function GET(request: NextRequest) {
       hasPrev: page > 1
     })
   } catch (error) {
-    console.error('Error fetching manufacturers:', error)
     return NextResponse.json(
       { error: 'Failed to fetch manufacturers' },
       { status: 500 }
@@ -95,7 +139,48 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/manufacturers - Create new manufacturer (mock implementation)
+/**
+ * POST /api/manufacturers
+ * 
+ * Create a new manufacturer with metadata.
+ * 
+ * @param {NextRequest} request - The HTTP request object containing manufacturer data
+ * @returns {Promise<NextResponse>} JSON response with created manufacturer (201 Created)
+ * 
+ * @example
+ * // Request
+ * POST /api/manufacturers
+ * Content-Type: application/json
+ * 
+ * {
+ *   "name": "New Manufacturer",
+ *   "website": "https://example.com",
+ *   "logoUrl": "https://...",
+ *   "description": "Description of manufacturer",
+ *   "country": "United States",
+ *   "isActive": true
+ * }
+ * 
+ * // Response (201 Created)
+ * {
+ *   "id": "new-id",
+ *   "name": "New Manufacturer",
+ *   "country": "United States",
+ *   "isActive": true,
+ *   "productCount": 0
+ * }
+ * 
+ * @body {string} name - Manufacturer name (required, 1-100 chars)
+ * @body {string} [website] - Company website URL
+ * @body {string} [logoUrl] - Logo image URL
+ * @body {string} [description] - Company description (max 500 chars)
+ * @body {string} [country] - Headquarters country (max 100 chars)
+ * @body {boolean} [isActive=true] - Active status
+ * 
+ * @throws {400} Bad Request - Validation failed
+ * @throws {409} Conflict - Manufacturer with this name already exists
+ * @throws {500} Internal Server Error - Server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -124,10 +209,8 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString()
     }
 
-    console.log(`Mock manufacturer created: ${newManufacturer.name}`)
     return NextResponse.json(newManufacturer, { status: 201 })
   } catch (error) {
-    console.error('Error creating manufacturer:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

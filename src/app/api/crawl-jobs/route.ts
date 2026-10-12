@@ -13,7 +13,53 @@ const createCrawlJobSchema = z.object({
   }).optional()
 })
 
-// GET /api/crawl-jobs - List crawl jobs
+/**
+ * GET /api/crawl-jobs
+ * 
+ * List all crawl jobs with filtering, sorting, and pagination.
+ * 
+ * @param {NextRequest} request - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with paginated job list
+ * 
+ * @example
+ * // Request
+ * GET /api/crawl-jobs?page=1&pageSize=20&status=COMPLETED&manufacturerId=1
+ * 
+ * // Response (200 OK)
+ * {
+ *   "items": [
+ *     {
+ *       "id": "1",
+ *       "manufacturerId": "1",
+ *       "type": "FULL_CRAWL",
+ *       "status": "COMPLETED",
+ *       "itemsProcessed": 3,
+ *       "itemsCreated": 3,
+ *       "itemsUpdated": 0,
+ *       "startedAt": "2026-10-15T08:30:00Z",
+ *       "completedAt": "2026-10-15T09:30:00Z",
+ *       "manufacturer": { "id": "1", "name": "Enphase Energy" }
+ *     }
+ *   ],
+ *   "total": 45,
+ *   "page": 1,
+ *   "pageSize": 20,
+ *   "totalPages": 3,
+ *   "hasNext": true,
+ *   "hasPrev": false
+ * }
+ * 
+ * @query {number} [page=1] - Page number (1-indexed)
+ * @query {number} [pageSize=20] - Items per page (max 100)
+ * @query {string} [manufacturerId] - Filter by manufacturer ID
+ * @query {string} [status] - Filter by job status (QUEUED, RUNNING, COMPLETED, FAILED)
+ * @query {string} [type] - Filter by job type (FULL_CRAWL, INCREMENTAL_CRAWL, PRODUCT_UPDATE)
+ * @query {string} [sortBy=createdAt] - Sort field
+ * @query {string} [sortOrder=desc] - Sort order (asc, desc)
+ * 
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {500} Internal Server Error - Server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -159,7 +205,6 @@ export async function GET(request: NextRequest) {
       hasPrev: page > 1
     })
   } catch (error) {
-    console.error('Error fetching crawl jobs:', error)
     return NextResponse.json(
       { error: 'Failed to fetch crawl jobs' },
       { status: 500 }
@@ -205,10 +250,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Mock crawl job created: ${mockJob.id}`)
     return NextResponse.json(mockJob, { status: 201 })
   } catch (error) {
-    console.error('Error creating crawl job:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

@@ -97,7 +97,7 @@ export default function CountryFilterPage() {
         setProducts(data.items || []);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Error fetching products
     } finally {
       setLoading(false);
     }

@@ -244,7 +244,69 @@ function calculateRelevance(product: any, query: string): number {
   return relevance
 }
 
-// Main search endpoint
+/**
+ * GET /api/search
+ * 
+ * Perform full-text search with relevance scoring and advanced filtering.
+ * Supports both keyword search and semantic search via embeddings.
+ * 
+ * @param {NextRequest} request - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with search results
+ * 
+ * @example
+ * // Keyword Search
+ * GET /api/search?q=IQ8&page=1&pageSize=20&sortBy=relevance
+ * 
+ * // Advanced Search with Filters
+ * GET /api/search?q=microinverter&manufacturers=Enphase,APsystems&minPower=300&maxPower=400&minEfficiency=96
+ * 
+ * // Search Suggestions
+ * GET /api/search?q=IQ&suggestions=true&limit=5
+ * 
+ * // Response (200 OK)
+ * {
+ *   "items": [
+ *     {
+ *       "id": "1",
+ *       "name": "IQ8 Microinverter",
+ *       "series": "IQ8",
+ *       "acPower": 345,
+ *       "efficiency": 97.0,
+ *       "manufacturer": { "name": "Enphase Energy" },
+ *       "relevance": 95
+ *     }
+ *   ],
+ *   "total": 45,
+ *   "page": 1,
+ *   "pageSize": 20,
+ *   "totalPages": 3,
+ *   "hasNext": true,
+ *   "hasPrev": false
+ * }
+ * 
+ * @query {string} q - Search query (required, 1-200 chars)
+ * @query {number} [page=1] - Page number (1-1000)
+ * @query {number} [pageSize=20] - Items per page (1-100)
+ * @query {string} [manufacturers] - Comma-separated manufacturer names
+ * @query {string} [countries] - Comma-separated country names
+ * @query {number} [minPower] - Minimum AC power in watts
+ * @query {number} [maxPower] - Maximum AC power in watts
+ * @query {number} [minEfficiency] - Minimum efficiency percentage (0-100)
+ * @query {number} [maxEfficiency] - Maximum efficiency percentage (0-100)
+ * @query {number} [minWarranty] - Minimum warranty in years
+ * @query {number} [maxWarranty] - Maximum warranty in years
+ * @query {string} [certifications] - Comma-separated certification standards
+ * @query {string} [status] - Comma-separated statuses (ACTIVE, DISCONTINUED, ANNOUNCED, COMING_SOON)
+ * @query {string} [sortBy=relevance] - Sort field (relevance, name, acPower, efficiency, warranty, createdAt)
+ * @query {string} [sortOrder=desc] - Sort order (asc, desc)
+ * @query {boolean} [includeSpecs=false] - Include detailed specifications
+ * @query {boolean} [includeCertifications=false] - Include certification details
+ * @query {boolean} [suggestions=false] - Return search suggestions instead of results
+ * 
+ * @throws {400} Bad Request - Invalid search parameters
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {500} Internal Server Error - Search service error
+ */
 export async function GET(request: NextRequest) {
   try {
     // Validate session
@@ -262,7 +324,6 @@ export async function GET(request: NextRequest) {
     
     return await performSearch(request)
   } catch (error) {
-    console.error('Search API error:', error)
     return NextResponse.json(
       { error: 'Search failed' },
       { status: 500 }
@@ -303,7 +364,7 @@ async function performSearch(request: NextRequest) {
       return NextResponse.json(dbResults)
     }
   } catch (dbError) {
-    console.error('Database search failed, falling back to enhanced search:', dbError)
+    // Database search failed, falling back to enhanced search
   }
   
   // Fallback to enhanced search with mock data
@@ -575,7 +636,6 @@ async function getSearchSuggestions(request: NextRequest) {
     
     return NextResponse.json({ suggestions })
   } catch (error) {
-    console.error('Suggestions error:', error)
     return NextResponse.json(
       { error: 'Failed to get suggestions' },
       { status: 500 }

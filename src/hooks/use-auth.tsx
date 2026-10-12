@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('auth_token');
       }
     } catch (error) {
-      console.error('Token verification failed:', error);
       localStorage.removeItem('auth_token');
     } finally {
       setIsLoading(false);

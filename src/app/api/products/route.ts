@@ -27,7 +27,60 @@ const createProductSchema = z.object({
 
 const updateProductSchema = createProductSchema.partial()
 
-// GET /api/products - List products with advanced filtering and pagination
+/**
+ * GET /api/products
+ * 
+ * List all products with advanced filtering, sorting, and pagination.
+ * 
+ * @param {NextRequest} request - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with paginated product list
+ * 
+ * @example
+ * // Request
+ * GET /api/products?page=1&pageSize=20&search=IQ8&manufacturer=Enphase
+ * 
+ * // Response (200 OK)
+ * {
+ *   "items": [
+ *     {
+ *       "id": "1",
+ *       "name": "IQ8 Microinverter",
+ *       "series": "IQ8",
+ *       "model": "IQ8A-3-72-208-240-277",
+ *       "manufacturerId": "1",
+ *       "acPower": 345,
+ *       "efficiency": 97.0,
+ *       "warranty": 25,
+ *       "status": "ACTIVE",
+ *       "manufacturer": { "id": "1", "name": "Enphase Energy" },
+ *       "countries": ["United States", "Canada"]
+ *     }
+ *   ],
+ *   "total": 45,
+ *   "page": 1,
+ *   "pageSize": 20,
+ *   "totalPages": 3,
+ *   "hasNext": true,
+ *   "hasPrev": false
+ * }
+ * 
+ * @query {number} [page=1] - Page number (1-indexed)
+ * @query {number} [pageSize=20] - Items per page (max 100)
+ * @query {string} [search] - Search query (name, series, model, manufacturer)
+ * @query {string} [manufacturerId] - Filter by manufacturer ID
+ * @query {string} [manufacturer] - Filter by manufacturer name
+ * @query {string} [status] - Filter by status (ACTIVE, DISCONTINUED, ANNOUNCED, COMING_SOON)
+ * @query {number} [minPower] - Minimum AC power in watts
+ * @query {number} [maxPower] - Maximum AC power in watts
+ * @query {number} [minEfficiency] - Minimum efficiency percentage
+ * @query {number} [maxEfficiency] - Maximum efficiency percentage
+ * @query {string} [country] - Filter by availability country
+ * @query {string} [sortBy=name] - Sort field (name, acPower, efficiency, warranty)
+ * @query {string} [sortOrder=asc] - Sort order (asc, desc)
+ * 
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {500} Internal Server Error - Database or server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -132,7 +185,6 @@ export async function GET(request: NextRequest) {
       hasPrev: page > 1
     })
   } catch (error) {
-    console.error('Error fetching products:', error)
     return NextResponse.json(
       { error: 'Failed to fetch products' },
       { status: 500 }
@@ -140,7 +192,71 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/products - Create new product (mock implementation)
+/**
+ * POST /api/products
+ * 
+ * Create a new product with specifications and metadata.
+ * 
+ * @param {NextRequest} request - The HTTP request object containing product data
+ * @returns {Promise<NextResponse>} JSON response with created product (201 Created)
+ * 
+ * @example
+ * // Request
+ * POST /api/products
+ * Content-Type: application/json
+ * 
+ * {
+ *   "name": "IQ8P Microinverter",
+ *   "series": "IQ8",
+ *   "model": "IQ8P-72-2-INT",
+ *   "manufacturerId": "1",
+ *   "acPower": 345,
+ *   "maxModuleSize": 370,
+ *   "voltage": 240,
+ *   "mppt": 1,
+ *   "efficiency": 97.0,
+ *   "warranty": 25,
+ *   "weight": 3.1,
+ *   "dimensions": "15.7 x 8.5 x 1.5 inches",
+ *   "monitoringPlatform": "Enphase Enlighten",
+ *   "status": "ACTIVE",
+ *   "datasheetUrl": "https://...",
+ *   "productUrl": "https://..."
+ * }
+ * 
+ * // Response (201 Created)
+ * {
+ *   "id": "new-id",
+ *   "name": "IQ8P Microinverter",
+ *   "manufacturerId": "1",
+ *   "status": "ACTIVE",
+ *   "createdAt": "2026-10-15T10:30:00Z"
+ * }
+ * 
+ * @body {string} name - Product name (required, 1-200 chars)
+ * @body {string} [series] - Product series (max 50 chars)
+ * @body {string} [model] - Model number (max 100 chars)
+ * @body {string} manufacturerId - Manufacturer ID (required)
+ * @body {number} [acPower] - AC power output in watts
+ * @body {number} [maxModuleSize] - Maximum module size in watts
+ * @body {number} [voltage] - Operating voltage
+ * @body {number} [mppt] - MPPT tracker count
+ * @body {number} [efficiency] - Peak efficiency percentage (0-100)
+ * @body {number} [warranty] - Warranty in years
+ * @body {number} [weight] - Weight in kg
+ * @body {string} [dimensions] - Physical dimensions
+ * @body {string} [monitoringPlatform] - Monitoring platform name
+ * @body {string} [status=ACTIVE] - Product status
+ * @body {string} [imageUrl] - Product image URL
+ * @body {string} [datasheetUrl] - Datasheet PDF URL
+ * @body {string} [productUrl] - Product page URL
+ * @body {string} [aiSummary] - AI-generated summary (max 1000 chars)
+ * @body {number} [confidenceScore=1.0] - Data confidence score (0-1)
+ * 
+ * @throws {400} Bad Request - Validation failed
+ * @throws {404} Not Found - Manufacturer not found
+ * @throws {500} Internal Server Error - Server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -168,10 +284,8 @@ export async function POST(request: NextRequest) {
       status: 'ACTIVE'
     }
 
-    console.log(`Mock product created: ${newProduct.name}`)
     return NextResponse.json(newProduct, { status: 201 })
   } catch (error) {
-    console.error('Error creating product:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

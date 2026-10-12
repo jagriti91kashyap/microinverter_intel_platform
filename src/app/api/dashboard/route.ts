@@ -59,6 +59,60 @@ const dashboardMetricsSchema = z.object({
   }))
 })
 
+/**
+ * GET /api/dashboard
+ * 
+ * Retrieve comprehensive dashboard metrics and KPI data.
+ * Requires authenticated session with read:analytics permission.
+ * 
+ * @returns {Promise<NextResponse>} JSON response with dashboard metrics
+ * 
+ * @example
+ * // Request
+ * GET /api/dashboard
+ * Authorization: Bearer <session_token>
+ * 
+ * // Response (200 OK)
+ * {
+ *   "totalProducts": 167,
+ *   "totalManufacturers": 21,
+ *   "recentUpdates": 8,
+ *   "activeJobs": 2,
+ *   "recentLaunches": 5,
+ *   "recentlyUpdated": [
+ *     {
+ *       "id": "1",
+ *       "name": "IQ8 Microinverter",
+ *       "manufacturer": { "name": "Enphase Energy" },
+ *       "status": "ACTIVE",
+ *       "updatedAt": "2026-10-15T10:30:00Z"
+ *     }
+ *   ],
+ *   "recentlyLaunched": [...],
+ *   "manufacturerDistribution": [...],
+ *   "countryDistribution": [...],
+ *   "powerClassDistribution": [...],
+ *   "warrantyDistribution": [...],
+ *   "platformStatus": [...]
+ * }
+ * 
+ * @returns {number} totalProducts - Total active products in database
+ * @returns {number} totalManufacturers - Total active manufacturers
+ * @returns {number} recentUpdates - Products updated in last 7 days
+ * @returns {number} activeJobs - Currently running crawl jobs
+ * @returns {number} recentLaunches - Products launched in last 30 days
+ * @returns {Array} recentlyUpdated - Last 5 updated products
+ * @returns {Array} recentlyLaunched - Last 5 launched products
+ * @returns {Array} manufacturerDistribution - Product count by manufacturer
+ * @returns {Array} countryDistribution - Product availability by country
+ * @returns {Array} powerClassDistribution - Products grouped by power rating
+ * @returns {Array} warrantyDistribution - Products grouped by warranty years
+ * @returns {Array} platformStatus - System component status (DB, AI, Sync)
+ * 
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {403} Forbidden - Insufficient permissions (requires read:analytics)
+ * @throws {500} Internal Server Error - Database error (falls back to mock data)
+ */
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -265,7 +319,7 @@ export async function GET() {
       
       return NextResponse.json(validatedData)
     } catch (dbError) {
-      console.error('Database error, falling back to mock data:', dbError)
+      // Database error, falling back to mock data
       
       // Enhanced mock data with charts
       const mockData = {
@@ -370,12 +424,32 @@ export async function GET() {
       return NextResponse.json(mockData)
     }
   } catch (error) {
-    console.error('Dashboard API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// POST endpoint for refreshing dashboard metrics
+/**
+ * POST /api/dashboard
+ * 
+ * Trigger a refresh of cached dashboard metrics.
+ * Requires authenticated session with manage:system permission.
+ * 
+ * @returns {Promise<NextResponse>} JSON response with refresh status (200 OK)
+ * 
+ * @example
+ * // Request
+ * POST /api/dashboard
+ * Authorization: Bearer <session_token>
+ * 
+ * // Response (200 OK)
+ * {
+ *   "message": "Dashboard metrics refresh initiated"
+ * }
+ * 
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {403} Forbidden - Insufficient permissions (requires manage:system)
+ * @throws {500} Internal Server Error - Refresh operation failed
+ */
 export async function POST() {
   try {
     const session = await getServerSession(authOptions)
@@ -393,7 +467,6 @@ export async function POST() {
     // For now, just return success
     return NextResponse.json({ message: 'Dashboard metrics refresh initiated' })
   } catch (error) {
-    console.error('Dashboard refresh error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

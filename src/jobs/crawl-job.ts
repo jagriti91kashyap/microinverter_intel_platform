@@ -93,7 +93,6 @@ export async function processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
   const { manufacturerId, url, crawlType, priority, metadata } = job.data;
   
   try {
-    console.log(`Processing crawl job: ${job.id} for ${url}`);
     
     // Update job status in database
     const crawlJob = await db.crawlJob.findUnique({
@@ -125,9 +124,7 @@ export async function processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
       }
     }
 
-    console.log(`Crawl job ${job.id} completed successfully`);
   } catch (error) {
-    console.error(`Crawl job ${job.id} failed:`, error);
     
     // Update job status to failed
     await db.crawlJob.update({
@@ -150,12 +147,10 @@ export async function processDatasheetJob(job: Job<ProcessDatasheetJobData>): Pr
   const { datasheetUrl, productId, manufacturerId } = job.data;
   
   try {
-    console.log(`Processing datasheet job: ${job.id} for ${datasheetUrl}`);
     
     // Check if datasheet already exists
     const existingDatasheet = await pdfProcessingService.pdfExists(datasheetUrl);
     if (existingDatasheet) {
-      console.log(`Datasheet already exists: ${datasheetUrl}`);
       return;
     }
 
@@ -177,9 +172,7 @@ export async function processDatasheetJob(job: Job<ProcessDatasheetJobData>): Pr
       });
     }
 
-    console.log(`Datasheet job ${job.id} completed`);
   } catch (error) {
-    console.error(`Datasheet job ${job.id} failed:`, error);
     throw error;
   }
 }
@@ -191,7 +184,6 @@ export async function processExtractionJob(job: Job<ExtractSpecificationsJobData
   const { productId, content, sourceUrl, pageNumber } = job.data;
   
   try {
-    console.log(`Processing extraction job: ${job.id} for product ${productId}`);
     
     // Extract specifications using AI
     const result = await aiExtractionService.extractSpecifications({
@@ -208,9 +200,7 @@ export async function processExtractionJob(job: Job<ExtractSpecificationsJobData
       await updateProductWithAIData(productId, result);
     }
 
-    console.log(`Extraction job ${job.id} completed`);
   } catch (error) {
-    console.error(`Extraction job ${job.id} failed:`, error);
     throw error;
   }
 }
@@ -222,7 +212,6 @@ export async function processEmbeddingJob(job: Job<GenerateEmbeddingsJobData>): 
   const { productIds, type } = job.data;
   
   try {
-    console.log(`Processing embedding job: ${job.id} for ${type}`);
     
     if (type === 'batch') {
       await embeddingService.batchGenerateEmbeddings(productIds);
@@ -232,9 +221,7 @@ export async function processEmbeddingJob(job: Job<GenerateEmbeddingsJobData>): 
       }
     }
 
-    console.log(`Embedding job ${job.id} completed`);
   } catch (error) {
-    console.error(`Embedding job ${job.id} failed:`, error);
     throw error;
   }
 }
@@ -294,7 +281,7 @@ async function processCrawlResults(
         }
       }
     } catch (error) {
-      console.error(`Failed to process product ${productData.name}:`, error);
+      // Failed to process product
     }
   }
 }
@@ -321,7 +308,7 @@ async function storeSpecifications(
         },
       });
     } catch (error) {
-      console.error(`Failed to store specification ${spec.name}:`, error);
+      // Failed to store specification
     }
   }
 }
@@ -358,7 +345,7 @@ async function updateProductWithAIData(
       });
     }
   } catch (error) {
-    console.error(`Failed to update product with AI data:`, error);
+    // Failed to update product with AI data
   }
 }
 
@@ -457,5 +444,5 @@ export async function cleanupJobs(olderThanHours: number = 24): Promise<void> {
     embeddingQueue.clean(olderThanHours * 1000, 0, 'completed'),
   ]);
   
-  console.log(`Cleaned up jobs older than ${olderThanHours} hours`);
+  // Cleaned up old jobs
 }

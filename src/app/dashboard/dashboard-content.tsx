@@ -41,7 +41,6 @@ export function DashboardContent() {
       const token = localStorage.getItem('auth_token');
       
       if (!token) {
-        console.error('No authentication token found');
         // Redirect to login if no token
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
@@ -57,10 +56,8 @@ export function DashboardContent() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Dashboard data received:', data);
         setKpiData(data);
       } else {
-        console.error('Dashboard API error:', response.status);
         if (response.status === 401) {
           // Token expired, redirect to login
           if (typeof window !== 'undefined') {
@@ -70,7 +67,7 @@ export function DashboardContent() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      // Error fetching dashboard data
     } finally {
       setIsLoading(false);
     }

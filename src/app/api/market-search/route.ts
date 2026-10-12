@@ -1,11 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * @typedef {Object} MarketSearchRequest
+ * @property {string} country - Country name (required)
+ * @property {string} [region] - Region code (e.g., EU, NA, APAC)
+ * @property {boolean} [includeWebSearch=false] - Include web search results
+ */
 interface MarketSearchRequest {
   country: string;
   region?: string;
   includeWebSearch?: boolean;
 }
 
+/**
+ * @typedef {Object} MarketSearchResult
+ * @property {string} manufacturer - Manufacturer name
+ * @property {string} productName - Product name
+ * @property {string} series - Product series
+ * @property {number} acPower - AC power in watts
+ * @property {number} mppt - MPPT tracker count
+ * @property {number} warranty - Warranty in years
+ * @property {string} monitoringPlatform - Monitoring platform
+ * @property {string} status - Product status
+ * @property {string} datasheetUrl - Datasheet URL
+ * @property {string} productUrl - Product page URL
+ * @property {string} availability - Availability status
+ * @property {string[]} certifications - Regional certifications
+ * @property {Date} lastUpdated - Last update date
+ */
 interface MarketSearchResult {
   manufacturer: string;
   productName: string;
@@ -22,6 +44,50 @@ interface MarketSearchResult {
   lastUpdated: Date;
 }
 
+/**
+ * POST /api/market-search
+ * 
+ * Search for products available in a specific country/region.
+ * Returns availability, certifications, and regional product variants.
+ * 
+ * @param {NextRequest} req - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with market results (200 OK)
+ * 
+ * @example
+ * // Request
+ * POST /api/market-search
+ * Content-Type: application/json
+ * 
+ * {
+ *   "country": "Germany",
+ *   "region": "EU",
+ *   "includeWebSearch": false
+ * }
+ * 
+ * // Response (200 OK)
+ * {
+ *   "country": "Germany",
+ *   "region": "EU",
+ *   "results": [
+ *     {
+ *       "manufacturer": "Enphase Energy",
+ *       "productName": "IQ8AC Microinverter",
+ *       "acPower": 366,
+ *       "availability": "Available",
+ *       "certifications": ["IEC 62109", "CE Mark"],
+ *       "lastUpdated": "2026-10-15T00:00:00Z"
+ *     }
+ *   ],
+ *   "totalResults": 45
+ * }
+ * 
+ * @body {string} country - Country name (required)
+ * @body {string} [region] - Region code (EU, NA, APAC, LATAM)
+ * @body {boolean} [includeWebSearch=false] - Include web search
+ * 
+ * @throws {400} Bad Request - Missing country
+ * @throws {500} Internal Server Error - Search service error
+ */
 export async function POST(req: NextRequest) {
   try {
     const { country, region, includeWebSearch = false }: MarketSearchRequest = await req.json();

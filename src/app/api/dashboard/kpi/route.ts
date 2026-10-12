@@ -127,7 +127,6 @@ async function getDashboardKPI(req: NextRequest) {
     return NextResponse.json(getKPIData());
     
   } catch (error) {
-    console.error('Dashboard KPI error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }

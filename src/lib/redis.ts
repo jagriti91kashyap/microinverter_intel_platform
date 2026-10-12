@@ -32,27 +32,27 @@ export const redisCache = new Redis(process.env.REDIS_URL || 'redis://localhost:
 
 // Connection event handlers
 redisConnection.on('connect', () => {
-  console.log('Redis connected for BullMQ');
+  // Redis connected for BullMQ
 });
 
 redisConnection.on('error', (error) => {
-  console.error('Redis connection error (BullMQ):', error);
+  // Redis connection error (BullMQ)
 });
 
 redisConnection.on('close', () => {
-  console.log('Redis connection closed (BullMQ)');
+  // Redis connection closed (BullMQ)
 });
 
 redisCache.on('connect', () => {
-  console.log('Redis connected for caching');
+  // Redis connected for caching
 });
 
 redisCache.on('error', (error) => {
-  console.error('Redis connection error (cache):', error);
+  // Redis connection error (cache)
 });
 
 redisCache.on('close', () => {
-  console.log('Redis connection closed (cache)');
+  // Redis connection closed (cache)
 });
 
 // Graceful shutdown

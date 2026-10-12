@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/middleware';
 import { pdfProcessingService } from '@/services/pdf/processor';
 
+/**
+ * @typedef {Object} PDFProcessRequest
+ * @property {string} url - PDF URL to process (required)
+ * @property {string} [productId] - Associated product ID
+ * @property {string} [manufacturerId] - Associated manufacturer ID
+ * @property {boolean} [extractSpecifications=true] - Extract specifications from PDF
+ */
 interface PDFProcessRequest {
   url: string;
   productId?: string;
@@ -9,6 +16,49 @@ interface PDFProcessRequest {
   extractSpecifications?: boolean;
 }
 
+/**
+ * POST /api/pdf/process
+ * 
+ * Process and extract data from PDF datasheets using OCR and AI.
+ * Supports caching of already-processed PDFs.
+ * 
+ * @param {NextRequest} req - The HTTP request object
+ * @returns {Promise<NextResponse>} JSON response with extracted data (200 OK)
+ * 
+ * @example
+ * // Request
+ * POST /api/pdf/process
+ * Content-Type: application/json
+ * Authorization: Bearer <session_token>
+ * 
+ * {
+ *   "url": "https://enphase.com/datasheets/iq8.pdf",
+ *   "productId": "1",
+ *   "manufacturerId": "1",
+ *   "extractSpecifications": true
+ * }
+ * 
+ * // Response (200 OK)
+ * {
+ *   "success": true,
+ *   "filename": "iq8.pdf",
+ *   "pages": 8,
+ *   "specifications": [
+ *     { "name": "AC Power", "value": "345", "unit": "W", "confidence": 0.94 }
+ *   ],
+ *   "text": "Full extracted text...",
+ *   "processedAt": "2026-10-15T10:30:00Z"
+ * }
+ * 
+ * @body {string} url - PDF URL (required, must be valid URL)
+ * @body {string} [productId] - Associated product ID
+ * @body {string} [manufacturerId] - Associated manufacturer ID
+ * @body {boolean} [extractSpecifications=true] - Extract specifications
+ * 
+ * @throws {400} Bad Request - Missing or invalid URL
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {500} Internal Server Error - PDF processing error
+ */
 async function processPDF(req: NextRequest) {
   try {
     const { url, productId, manufacturerId, extractSpecifications = true }: PDFProcessRequest = await req.json();

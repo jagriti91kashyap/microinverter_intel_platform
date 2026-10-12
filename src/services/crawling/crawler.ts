@@ -93,9 +93,7 @@ export class WebCrawlerService {
         }
       });
 
-      console.log('Web crawler initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize web crawler:', error);
       throw new Error(`Crawler initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -113,9 +111,8 @@ export class WebCrawlerService {
         await this.browser.close();
         this.browser = null;
       }
-      console.log('Web crawler closed');
     } catch (error) {
-      console.error('Error closing web crawler:', error);
+      // Error closing web crawler
     }
   }
 
@@ -146,10 +143,8 @@ export class WebCrawlerService {
         throw new Error('Failed to create crawl job');
       }
 
-      console.log(`Started crawl job ${job.id} for ${request.url}`);
       return job.id;
     } catch (error) {
-      console.error('Failed to start crawl:', error);
       throw new Error(`Crawl start failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -211,10 +206,8 @@ export class WebCrawlerService {
         WHERE id = ${jobId}
       `;
 
-      console.log(`Crawl job ${jobId} completed successfully`);
       return result;
     } catch (error) {
-      console.error(`Crawl job ${jobId} failed:`, error);
       
       // Update job with error
       await db.crawlJob.update({
@@ -480,7 +473,6 @@ export class WebCrawlerService {
         datasheetUrl,
       };
     } catch (error) {
-      console.error('Product data extraction failed:', error);
       return null;
     }
   }
@@ -555,7 +547,6 @@ export class WebCrawlerService {
       const job = await db.crawlJob.findUnique({ where: { id: jobId } });
       return job;
     } catch (error) {
-      console.error('Failed to get crawl status:', error);
       throw error;
     }
   }
@@ -572,7 +563,6 @@ export class WebCrawlerService {
       });
       return jobs || [];
     } catch (error) {
-      console.error('Failed to list crawl jobs:', error);
       throw error;
     }
   }

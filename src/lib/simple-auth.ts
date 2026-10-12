@@ -1,7 +1,13 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+function getJWTSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET environment variable is not set');
+  }
+  return secret;
+}
 
 // Simple user credentials (in production, these should be in a database)
 const USERS = [
@@ -58,7 +64,7 @@ export class SimpleAuthService {
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
+      getJWTSecret(),
       { expiresIn: '24h' }
     );
 
@@ -78,7 +84,7 @@ export class SimpleAuthService {
    */
   verifyToken(token: string): JWTPayload {
     try {
-      return jwt.verify(token, JWT_SECRET) as JWTPayload;
+      return jwt.verify(token, getJWTSecret()) as JWTPayload;
     } catch (error) {
       throw new Error('Invalid token');
     }

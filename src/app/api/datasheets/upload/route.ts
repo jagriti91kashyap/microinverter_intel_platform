@@ -3,6 +3,48 @@ import { withAuth } from '@/lib/middleware';
 import { pdfProcessingService } from '@/services/pdf/processor';
 import { addDatasheetJob } from '@/jobs/crawl-job';
 
+/**
+ * POST /api/datasheets/upload
+ * 
+ * Upload and process PDF datasheets for products.
+ * Supports file upload or URL-based processing.
+ * Maximum file size: 10MB, PDF format only.
+ * 
+ * @param {NextRequest} req - The HTTP request object with FormData
+ * @returns {Promise<NextResponse>} JSON response with upload status (200 OK)
+ * 
+ * @example
+ * // Request (multipart/form-data)
+ * POST /api/datasheets/upload
+ * Authorization: Bearer <session_token>
+ * 
+ * FormData:
+ * - file: <PDF file>
+ * - productId: "1"
+ * - manufacturerId: "1"
+ * 
+ * // Response (200 OK)
+ * {
+ *   "success": true,
+ *   "filename": "iq8.pdf",
+ *   "productId": "1",
+ *   "fileSize": 2048576,
+ *   "pages": 8,
+ *   "jobId": "job-123",
+ *   "status": "processing",
+ *   "uploadedAt": "2026-10-15T10:30:00Z"
+ * }
+ * 
+ * @body {File} file - PDF file (required, max 10MB)
+ * @body {string} [productId] - Associated product ID
+ * @body {string} [manufacturerId] - Associated manufacturer ID
+ * @body {string} [url] - URL to datasheet (alternative to file upload)
+ * 
+ * @throws {400} Bad Request - Missing file or invalid format
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {413} Payload Too Large - File exceeds 10MB
+ * @throws {500} Internal Server Error - Upload or processing error
+ */
 async function uploadDatasheet(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -93,7 +135,6 @@ async function uploadDatasheet(req: NextRequest) {
       throw error;
     }
   } catch (error) {
-    console.error('Datasheet upload error:', error);
     return NextResponse.json(
       { error: 'Failed to upload datasheet' },
       { status: 500 }

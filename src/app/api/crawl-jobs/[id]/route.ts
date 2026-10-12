@@ -16,7 +16,50 @@ const updateCrawlJobSchema = z.object({
   }).optional()
 })
 
-// GET /api/crawl-jobs/[id] - Get single crawl job
+/**
+ * GET /api/crawl-jobs/[id]
+ * 
+ * Get detailed information about a specific crawl job.
+ * Includes job status, results, errors, and configuration.
+ * 
+ * @param {NextRequest} request - The HTTP request object
+ * @param {Object} params - Route parameters
+ * @param {Promise<{id: string}>} params.params - Promise resolving to job ID
+ * @returns {Promise<NextResponse>} JSON response with job details (200 OK)
+ * 
+ * @example
+ * // Request
+ * GET /api/crawl-jobs/job-123
+ * Authorization: Bearer <session_token>
+ * 
+ * // Response (200 OK)
+ * {
+ *   "id": "job-123",
+ *   "manufacturerId": "1",
+ *   "type": "FULL_CRAWL",
+ *   "status": "COMPLETED",
+ *   "itemsProcessed": 3,
+ *   "itemsCreated": 3,
+ *   "itemsUpdated": 0,
+ *   "startedAt": "2026-10-15T08:30:00Z",
+ *   "completedAt": "2026-10-15T09:30:00Z",
+ *   "manufacturer": {
+ *     "id": "1",
+ *     "name": "Enphase Energy",
+ *     "country": "United States"
+ *   },
+ *   "results": [
+ *     { "productId": "1", "name": "IQ8", "status": "created" }
+ *   ],
+ *   "errors": []
+ * }
+ * 
+ * @param {string} id - Crawl job ID (required)
+ * 
+ * @throws {401} Unauthorized - Missing or invalid session
+ * @throws {404} Not Found - Job not found
+ * @throws {500} Internal Server Error - Database error
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +104,7 @@ export async function GET(
 
       return NextResponse.json(crawlJob)
     } catch (dbError) {
-      console.error('Database error, falling back to mock data:', dbError)
+      // Database error, falling back to mock data
       
       // Fallback mock data
       const mockJob = {
@@ -99,7 +142,6 @@ export async function GET(
       return NextResponse.json(mockJob)
     }
   } catch (error) {
-    console.error('Error fetching crawl job:', error)
     return NextResponse.json(
       { error: 'Failed to fetch crawl job' },
       { status: 500 }
@@ -199,7 +241,7 @@ export async function PUT(
 
       return NextResponse.json(crawlJob)
     } catch (dbError) {
-      console.error('Database error during crawl job update:', dbError)
+      // Database error during crawl job update
       
       // Fallback for development
       const mockJob = {
@@ -235,7 +277,6 @@ export async function PUT(
       return NextResponse.json(mockJob)
     }
   } catch (error) {
-    console.error('Error updating crawl job:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -329,7 +370,7 @@ export async function DELETE(
         })
       }
     } catch (dbError) {
-      console.error('Database error during crawl job deletion:', dbError)
+      // Database error during crawl job deletion
       
       // Fallback for development
       return NextResponse.json({
@@ -342,7 +383,6 @@ export async function DELETE(
       })
     }
   } catch (error) {
-    console.error('Error deleting crawl job:', error)
     return NextResponse.json(
       { error: 'Failed to delete crawl job' },
       { status: 500 }
@@ -444,7 +484,7 @@ export async function POST(
         crawlJob
       })
     } catch (dbError) {
-      console.error('Database error during crawl job restart:', dbError)
+      // Database error during crawl job restart
       
       // Fallback for development
       const mockJob = {
@@ -464,7 +504,6 @@ export async function POST(
       })
     }
   } catch (error) {
-    console.error('Error restarting crawl job:', error)
     return NextResponse.json(
       { error: 'Failed to restart crawl job' },
       { status: 500 }
@@ -504,9 +543,7 @@ async function startCrawlJobAsync(jobId: string, manufacturerId: string, userId:
       }
     })
 
-    console.log(`Crawl job ${jobId} completed: ${finalStatus}`)
   } catch (error) {
-    console.error(`Crawl job ${jobId} failed:`, error)
     
     // Update job status to failed
     await prisma.crawlJob.update({

@@ -11,7 +11,6 @@ import {
 export const crawlWorker = new Worker(
   'crawl-queue',
   async (job) => {
-    console.log(`Processing crawl job ${job.id}`);
     await processCrawlJob(job);
   },
   {
@@ -27,7 +26,6 @@ export const crawlWorker = new Worker(
 export const datasheetWorker = new Worker(
   'datasheet-queue',
   async (job) => {
-    console.log(`Processing datasheet job ${job.id}`);
     await processDatasheetJob(job);
   },
   {
@@ -39,7 +37,6 @@ export const datasheetWorker = new Worker(
 export const extractionWorker = new Worker(
   'extraction-queue',
   async (job) => {
-    console.log(`Processing extraction job ${job.id}`);
     await processExtractionJob(job);
   },
   {
@@ -51,7 +48,6 @@ export const extractionWorker = new Worker(
 export const embeddingWorker = new Worker(
   'embedding-queue',
   async (job) => {
-    console.log(`Processing embedding job ${job.id}`);
     await processEmbeddingJob(job);
   },
   {
@@ -62,59 +58,57 @@ export const embeddingWorker = new Worker(
 
 // Error handling for workers
 crawlWorker.on('error', (error) => {
-  console.error('Crawl worker error:', error);
+  // Crawl worker error
 });
 
 datasheetWorker.on('error', (error) => {
-  console.error('Datasheet worker error:', error);
+  // Datasheet worker error
 });
 
 extractionWorker.on('error', (error) => {
-  console.error('Extraction worker error:', error);
+  // Extraction worker error
 });
 
 embeddingWorker.on('error', (error) => {
-  console.error('Embedding worker error:', error);
+  // Embedding worker error
 });
 
 // Job completion handlers
 crawlWorker.on('completed', (job) => {
-  console.log(`Crawl job ${job.id} completed`);
+  // Crawl job completed
 });
 
 datasheetWorker.on('completed', (job) => {
-  console.log(`Datasheet job ${job.id} completed`);
+  // Datasheet job completed
 });
 
 extractionWorker.on('completed', (job) => {
-  console.log(`Extraction job ${job.id} completed`);
+  // Extraction job completed
 });
 
 embeddingWorker.on('completed', (job) => {
-  console.log(`Embedding job ${job.id} completed`);
+  // Embedding job completed
 });
 
 // Job failure handlers
 crawlWorker.on('failed', (job, error) => {
-  console.error(`Crawl job ${job?.id} failed:`, error);
+  // Crawl job failed
 });
 
 datasheetWorker.on('failed', (job, error) => {
-  console.error(`Datasheet job ${job?.id} failed:`, error);
+  // Datasheet job failed
 });
 
 extractionWorker.on('failed', (job, error) => {
-  console.error(`Extraction job ${job?.id} failed:`, error);
+  // Extraction job failed
 });
 
 embeddingWorker.on('failed', (job, error) => {
-  console.error(`Embedding job ${job?.id} failed:`, error);
+  // Embedding job failed
 });
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('Shutting down workers...');
-  
   await Promise.all([
     crawlWorker.close(),
     datasheetWorker.close(),
@@ -126,8 +120,6 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
-  console.log('Shutting down workers...');
-  
   await Promise.all([
     crawlWorker.close(),
     datasheetWorker.close(),
