@@ -246,7 +246,7 @@ export default function Dashboard() {
   }, [executiveSummary]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="min-h-screen bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="min-h-screen bg-white" style={{ pointerEvents: 'auto' }}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-8 border-t-4 border-t-enphase-500">
         <p className="text-[11px] font-semibold text-enphase-500 tracking-wider mb-3">MICROINVERTER MARKET INTELLIGENCE</p>
@@ -257,7 +257,7 @@ export default function Dashboard() {
       <div className="px-8 py-8 space-y-8 max-w-[1600px]">
 
       {/* ═══ EXECUTIVE DOSSIER ═══ */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ pointerEvents: 'auto' }}>
         <div className="bg-white rounded-xl border border-gray-200">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900">Executive Intelligence Dossier</h2>
@@ -365,7 +365,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ═══ MIDDLE SECTION: Donut Chart + Recent Activity ═══ */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ pointerEvents: 'auto' }}>
         <div className="grid grid-cols-3 gap-5">
           {/* Donut Chart — Products by Manufacturer */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -462,7 +462,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ═══ EVENT LOG TABLE — Salesforce Bug Status style ═══ */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ pointerEvents: 'auto' }}>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900">Recent Market Events</h3>

@@ -1,16 +1,26 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { AlertCircle, CheckCircle } from "lucide-react"
 
 export default function SignIn() {
+  return (
+    <Suspense>
+      <SignInContent />
+    </Suspense>
+  )
+}
+
+function SignInContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
   const hasAttempted = useRef(false)
 
   // Auto-login with demo account on page load
@@ -30,7 +40,7 @@ export default function SignIn() {
           setError("Auto-login failed. Click below to retry.")
         } else {
           setIsSuccess(true)
-          setTimeout(() => { router.push("/dashboard") }, 800)
+          setTimeout(() => { router.push(callbackUrl) }, 800)
         }
       } catch {
         setError("An error occurred. Click below to retry.")
@@ -55,7 +65,7 @@ export default function SignIn() {
         setError("Login failed. Please try again.")
       } else {
         setIsSuccess(true)
-        setTimeout(() => { router.push("/dashboard") }, 800)
+        setTimeout(() => { router.push(callbackUrl) }, 800)
       }
     } catch {
       setError("An error occurred. Please try again.")
