@@ -188,17 +188,23 @@ export default function Dashboard() {
     return top6;
   }, []);
 
-  // Precompute conic-gradient for the donut chart
-  const donutGradient = useMemo(() => {
+  // Precompute SVG donut segments (circle stroke-dasharray technique)
+  const donutSegments = useMemo(() => {
     const total = donutData.reduce((s, d) => s + d.value, 0);
-    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
-    let cumulative = 0;
-    const stops = donutData.map((d, i) => {
-      const start = cumulative;
-      cumulative += (d.value / total) * 360;
-      return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${start}deg ${cumulative}deg`;
+    if (total === 0) return [];
+    const radius = 15.915;
+    const circumference = 2 * Math.PI * radius;
+    let cumulativeOffset = 0;
+    return donutData.map((d, i) => {
+      const segmentLength = (d.value / total) * circumference;
+      const offset = -cumulativeOffset;
+      cumulativeOffset += segmentLength;
+      return {
+        color: DONUT_COLORS[i % DONUT_COLORS.length],
+        dashArray: `${segmentLength} ${circumference - segmentLength}`,
+        dashOffset: offset,
+      };
     });
-    return `conic-gradient(${stops.join(', ')})`;
   }, [donutData]);
 
   // Build highlight bullets
@@ -439,18 +445,27 @@ export default function Dashboard() {
               <Link href="/manufacturers" className="text-[12px] text-enphase-500 hover:text-enphase-600 font-medium">View Report →</Link>
             </div>
             <div className="flex gap-4">
-              {/* CSS Donut Chart — uses backgroundImage to avoid globals.css overrides */}
+              {/* SVG Donut Chart — pure SVG, no CSS gradients */}
               <div className="relative flex-shrink-0" style={{ width: 160, height: 160 }}>
-                <div className="rounded-full" style={{
-                  width: 160,
-                  height: 160,
-                  backgroundImage: donutGradient,
-                }} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-full bg-white flex flex-col items-center justify-center" style={{ width: 100, height: 100 }}>
-                    <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
-                    <span className="text-[10px] text-gray-400">Total</span>
-                  </div>
+                <svg viewBox="0 0 36 36" width="160" height="160">
+                  {donutSegments.map((seg, i) => (
+                    <circle
+                      key={i}
+                      cx="18"
+                      cy="18"
+                      r="15.915"
+                      fill="none"
+                      stroke={seg.color}
+                      strokeWidth="3.5"
+                      strokeDasharray={seg.dashArray}
+                      strokeDashoffset={seg.dashOffset}
+                      transform="rotate(-90 18 18)"
+                    />
+                  ))}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-gray-900">{totalProducts}</span>
+                  <span className="text-[10px] text-gray-400">Total</span>
                 </div>
               </div>
               <div className="flex-1 space-y-1.5 pt-2">
