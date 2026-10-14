@@ -84,7 +84,7 @@ P(id, name, series, model, acPower, maxModuleSize, voltage, mppt, efficiency, wa
 ```
 Enphase=0, APsystems=1, Hoymiles=2, Deye=3, Sigenergy=4, Envertech=5,
 Chilicon=6, SMA=7, Fronius=8, SolarEdge=9, Tigo=10, TSUN=11, AEconversion=12, Atmoce=13,
-Q CELLS=14, Huawei=15, FoxESS=16, Tesla=17, Anker=18, Marstek=19, EcoFlow=20
+Q CELLS=14, Huawei=15, FoxESS=16, Tesla=17, Anker=18, Marstek=19, EcoFlow=20, Octopus Energy=21, Sungrow=22
 ```
 
 ### Country Groups
