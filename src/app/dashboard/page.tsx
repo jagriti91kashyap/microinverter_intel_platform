@@ -132,7 +132,7 @@ export default function Dashboard() {
     }));
     const competitorMaxPowerObj = competitorPowers.reduce((max, curr) => 
       curr.perModule > max.perModule ? curr : max, 
-      { name: '', acPower: 0, perModule: 0, product: null }
+      { name: '', acPower: 0, perModule: 0, product: null as any }
     );
     const competitorMaxPower = competitorMaxPowerObj.perModule;
     

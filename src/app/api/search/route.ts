@@ -482,7 +482,7 @@ async function performDatabaseSearch(params: any) {
   })
   
   // Calculate relevance if needed
-  let items = products
+  let items: any[] = products
   if (params.sortBy === 'relevance' && params.q) {
     items = products.map(product => ({
       ...product,
@@ -565,11 +565,11 @@ function performEnhancedSearch(params: any) {
   
   // Sort results
   if (params.sortBy === 'relevance' && params.q) {
-    filteredProducts.sort((a, b) => b.relevance - a.relevance)
+    filteredProducts.sort((a, b) => (b as any).relevance - (a as any).relevance)
   } else if (['name', 'acPower', 'efficiency', 'warranty', 'createdAt'].includes(params.sortBy)) {
     filteredProducts.sort((a, b) => {
-      const aValue = a[params.sortBy] || ''
-      const bValue = b[params.sortBy] || ''
+      const aValue = (a as any)[params.sortBy] || ''
+      const bValue = (b as any)[params.sortBy] || ''
       return params.sortOrder === 'desc' 
         ? bValue.toString().localeCompare(aValue.toString())
         : aValue.toString().localeCompare(bValue.toString())
@@ -583,7 +583,8 @@ function performEnhancedSearch(params: any) {
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
   
   // Remove relevance from response if not needed
-  const items = paginatedProducts.map(({ relevance, ...product }) => {
+  const items = paginatedProducts.map((p) => {
+    const { relevance, ...product } = p as any
     const result: any = product
     if (params.sortBy === 'relevance') {
       result.relevance = relevance

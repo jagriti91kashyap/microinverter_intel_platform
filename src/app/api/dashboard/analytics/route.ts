@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       ])
 
       // Generate predictions if requested
-      const predictions = validatedParams.includePredictions 
+      const predictions = validatedParams.includePredictions && trends
         ? await generatePredictions(overview, trends)
         : null
 

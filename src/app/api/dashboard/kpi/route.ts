@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { manufacturers } from '@/data/comprehensive-data';
 import { buildProducts } from '@/data/products-data';
 
+export const dynamic = 'force-dynamic';
+
 // Compute real KPI data from product database
 function computeKPIData() {
   const products = buildProducts(manufacturers);
